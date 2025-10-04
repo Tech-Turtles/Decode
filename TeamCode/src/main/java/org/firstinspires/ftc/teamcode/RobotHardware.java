@@ -15,8 +15,11 @@ import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 
 public class RobotHardware extends OpMode {
 
+    // Drive motors
     protected DcMotorEx frontLeft, frontRight, rearLeft, rearRight;
+    // Shooter motors
     protected DcMotorEx shooterTop, shooterBottom;
+    // Intake motor
     protected DcMotorEx intake;
     protected IMU imu;
 
