@@ -5,39 +5,70 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 @TeleOp
 @Config
-public class Manual extends RobotHardware {
+public class ShooterTuner extends RobotHardware {
 
-    // Flag to control whether slow mode is on or not
+    public static double shooterP = 0.0045, shooterI = 0, shooterD = 0;
     private boolean slowModeEnabled = false;
     private static final double DRIVE_SLOW_MODE_MULTIPLIER = 0.25;
-
-    public static double shooterSpeed = 0.2;
-    public static double intakeSpeed = 0.5;
+    protected PIDController shooterPID = new PIDController(shooterP, shooterI, shooterD);
+    private double prevP, prevI, prevD;
+    // Set point is RPM
+    public static double tolerance = 20, setpoint = 0;
+    public static double kStatic = 0.06;
 
     @Override
     public void init() {
         super.init();
-
     }
 
     @Override
     public void init_loop() {
         super.init_loop();
 
+        if(prevP != shooterP || prevI != shooterI || prevD != shooterD || shooterPID.getPositionTolerance() != tolerance)
+        {
+            shooterPID.setPID(shooterP, shooterI, shooterD);
+            shooterPID.setTolerance(tolerance);
+
+            prevP = shooterP;
+            prevI = shooterI;
+            prevD = shooterD;
+        }
     }
 
     @Override
     public void start() {
         super.start();
-
     }
 
     @Override
     public void loop() {
         super.loop();
+
+        if(prevP != shooterP || prevI != shooterI || prevD != shooterD || shooterPID.getPositionTolerance() != tolerance)
+        {
+            shooterPID.setPID(shooterP, shooterI, shooterD);
+            shooterPID.setTolerance(tolerance);
+
+            prevP = shooterP;
+            prevI = shooterI;
+            prevD = shooterD;
+        }
+
+        double rpm = shooterTop.getVelocity() / 28.0 * 60.0;
+        double power = shooterPID.calculate(rpm, setpoint);
+
+        shooterTop.setPower(power + Math.signum(power) * kStatic);
+        shooterBottom.setPower(power + Math.signum(power) * kStatic);
+
+        displayData("Shooter RPM", rpm);
+        displayData("Setpoint", setpoint);
+        displayData("PID Power", power);
+
         // Reset gyro angle if triangle is pressed
         if (driver1.triangleOnce()) {
             imu.resetYaw();
@@ -72,19 +103,5 @@ public class Manual extends RobotHardware {
         rearRight.setPower(rearRightPower);
 
         displayData("IMU angle", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
-        displayData("Top Shooter Ticks", shooterTop.getCurrentPosition());
-        displayData("Top Shooter Vel", shooterTop.getVelocity());
-        displayData("Shooter RPM", shooterTop.getVelocity() / 28.0 * 60.0);
-
-        if (driver1.right_trigger > 0.1)
-            intake.setPower(driver1.right_trigger * intakeSpeed);
-        else if (driver1.left_trigger > 0.1)
-            intake.setPower(-driver1.left_trigger * intakeSpeed);
-        else
-            intake.setPower(0);
-
-        double shooterPower = driver2.right_trigger * shooterSpeed;
-        shooterTop.setPower(shooterPower);
-        shooterBottom.setPower(shooterPower);
     }
 }
