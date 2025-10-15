@@ -45,7 +45,7 @@ public class Manual extends RobotHardware {
     public void loop() {
         super.loop();
 
-        // Slow mode toggle on/off
+        // Toggle slow mode on or off if right bumper is pressed
         if (driver1.rightBumperOnce()) {
             slowOn = !slowOn;
         }
@@ -56,7 +56,7 @@ public class Manual extends RobotHardware {
            slowSpeed = slowModeSpeed;
         }
 
-        double straight = -driver1.left_stick_y * slowSpeed;
+        double straight = driver1.left_stick_y * slowSpeed;
         double rotation = driver1.right_stick_x * slowSpeed;
         double strafe   = driver1.left_stick_x * slowSpeed;
         double maxSpeed = Math.max(Math.abs(straight) + Math.abs(rotation) + Math.abs(strafe), 1.0);
@@ -85,7 +85,7 @@ public class Manual extends RobotHardware {
 
         // Calculate shooter rpm; ticks per second to rpm
         // 6000 rpm motor is 28 ticks per rotation
-        double shooterRPM = shooterTop.getVelocity() * 28.0 / 60.0;
+        double shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
         double power = shooterPID.calculate(shooterRPM, setpoint);
         shooterTop.setPower(power + Math.signum(power) * kStatic);
         shooterBottom.setPower(power + Math.signum(power) * kStatic);
