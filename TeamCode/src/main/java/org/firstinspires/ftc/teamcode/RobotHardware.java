@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utility.Controller;
@@ -21,6 +23,7 @@ public class RobotHardware extends OpMode {
     protected DcMotorEx shooterTop, shooterBottom;
     // Intake motor
     protected DcMotorEx intake;
+    protected ServoImplEx gate;
     protected IMU imu;
 
     protected Controller driver1, driver2;
@@ -42,11 +45,13 @@ public class RobotHardware extends OpMode {
 
         intake = hardwareMap.get(DcMotorEx.class, "Intake");
 
+        gate = hardwareMap.get(ServoImplEx.class,"Gate");
+
         shooterTop = hardwareMap.get(DcMotorEx.class, "ShooterTop");
         shooterBottom = hardwareMap.get(DcMotorEx.class, "ShooterBottom");
 
-        rearRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterBottom.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rearRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

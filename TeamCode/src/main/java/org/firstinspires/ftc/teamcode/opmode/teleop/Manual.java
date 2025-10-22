@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.opmode.teleop;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 @TeleOp
@@ -17,10 +19,19 @@ public class Manual extends RobotHardware {
     private final double tolerance = 20;
     public static double kStatic = 0.06;
     private double setpoint = 0;
-    public static double lowTriangle = 4300;
+    public static double lowTriangle = 4900;
     public static double highTriangleEnd = 3500;
     public static double highTriangleMid = 2500;
     public static double highTriangleClose = 2200;
+
+    public static double gateOpen = 0.68;
+
+    public static double gateClosed = 1;
+
+    public static double gateOpenDurationSeconds = 0.3;
+
+    private ElapsedTimer gateTimer = new ElapsedTimer();
+    private boolean gateTimerActive;
 
     @Override
     public void init() {
@@ -56,14 +67,35 @@ public class Manual extends RobotHardware {
            slowSpeed = slowModeSpeed;
         }
 
-        double straight = driver1.left_stick_y * slowSpeed;
-        double rotation = driver1.right_stick_x * slowSpeed;
-        double strafe   = driver1.left_stick_x * slowSpeed;
-        double maxSpeed = Math.max(Math.abs(straight) + Math.abs(rotation) + Math.abs(strafe), 1.0);
-        frontLeft.setPower( (straight + rotation + strafe) / maxSpeed);
-        frontRight.setPower((straight - rotation - strafe) / maxSpeed);
-        rearLeft.setPower(  (straight + rotation + strafe) / maxSpeed);
-        rearRight.setPower( (straight - rotation - strafe) / maxSpeed);
+        double y = Math.pow(-driver1.left_stick_y, 3);
+        double x = Math.pow(driver1.left_stick_x * 1.1, 3);
+        double rx = Math.pow(driver1.right_stick_x, 3);
+
+        if (gamepad1.options) {
+            imu.resetYaw();
+        }
+
+        double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+        // Rotate the movement direction counter to the bot's rotation
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+
+        rotX = rotX * 1.1;  // Counteract imperfect strafing
+
+        // Denominator is the largest motor power (absolute value) or 1
+        // This ensures all the powers maintain the same ratio,
+        // but only if at least one is out of the range [-1, 1]
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        double frontLeftPower = (rotY + rotX + rx) * slowSpeed / denominator;
+        double rearLeftPower = (rotY - rotX + rx) * slowSpeed / denominator;
+        double frontRightPower = (rotY - rotX - rx) * slowSpeed / denominator;
+        double rearRightPower = (rotY + rotX - rx) *slowSpeed / denominator;
+
+        frontLeft.setPower(frontLeftPower);
+        rearLeft.setPower(rearLeftPower);
+        frontRight.setPower(frontRightPower);
+        rearRight.setPower(rearRightPower);
 
         // Intake control - Forward and backwards
         double intakeF = driver1.left_trigger;
@@ -83,6 +115,22 @@ public class Manual extends RobotHardware {
             setpoint = 0;
         }
 
+        if (driver2.rightBumper()){
+            gate.setPosition(gateOpen);
+        } else if (driver2.leftBumperOnce()) {
+            gateTimerActive = true;
+            gateTimer.reset();
+            gate.setPosition(gateOpen);
+        } else if (gateTimerActive) {
+            if (gateTimer.seconds() > gateOpenDurationSeconds)
+            {
+                gateTimerActive = false;
+                gate.setPosition(gateClosed);
+            }
+        } else {
+            gate.setPosition(gateClosed);
+        }
+
         // Calculate shooter rpm; ticks per second to rpm
         // 6000 rpm motor is 28 ticks per rotation
         double shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
@@ -92,7 +140,9 @@ public class Manual extends RobotHardware {
 
         // Output shooter calculations to driver station & dashboard
         displayData("Shooter RPM",shooterRPM);
-        displayData("Setpoint", setpoint);
+        displayData("Setpoint RPM", setpoint);
         displayData("PID Power", power);
+        displayData("Gate Timer (sec)", gateTimer.seconds());
+        displayData("Heading (deg)", Math.toDegrees(botHeading));
     }
 }
