@@ -11,15 +11,16 @@ import org.firstinspires.ftc.teamcode.utility.PIDController;
 @TeleOp
 @Config
 public class Manual extends RobotHardware {
+    public static double superSlowMode = 0.25;
     public static double slowModeSpeed = 0.5;
-    private boolean slowOn = false;
-    private final double shooterP = 0.0045, shooterI = 0, shooterD = 0;
+    private final double kV = 0.000169;
+    private final double shooterP = 0.003, shooterI = 0, shooterD = 0;
     protected PIDController shooterPID = new PIDController(shooterP, shooterI, shooterD);
     // Set point is RPM
     private final double tolerance = 20;
     public static double kStatic = 0.06;
     private double setpoint = 0;
-    public static double lowTriangle = 4900;
+    public static double lowTriangle = 4775;
     public static double highTriangleEnd = 3500;
     public static double highTriangleMid = 2500;
     public static double highTriangleClose = 2200;
@@ -30,7 +31,7 @@ public class Manual extends RobotHardware {
 
     public static double gateOpenDurationSeconds = 0.3;
 
-    private ElapsedTimer gateTimer = new ElapsedTimer();
+    private final ElapsedTimer gateTimer = new ElapsedTimer();
     private boolean gateTimerActive;
 
     @Override
@@ -56,15 +57,12 @@ public class Manual extends RobotHardware {
     public void loop() {
         super.loop();
 
-        // Toggle slow mode on or off if right bumper is pressed
-        if (driver1.rightBumperOnce()) {
-            slowOn = !slowOn;
-        }
-
         // If slow mode is on then update the slow speed multiplier
         double slowSpeed = 1;
-        if (slowOn) {
+        if (driver1.leftBumper()) {
            slowSpeed = slowModeSpeed;
+        } else if (driver1.rightBumper()) {
+           slowSpeed = superSlowMode;
         }
 
         double y = Math.pow(-driver1.left_stick_y, 3);
@@ -135,8 +133,10 @@ public class Manual extends RobotHardware {
         // 6000 rpm motor is 28 ticks per rotation
         double shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
         double power = shooterPID.calculate(shooterRPM, setpoint);
-        shooterTop.setPower(power + Math.signum(power) * kStatic);
-        shooterBottom.setPower(power + Math.signum(power) * kStatic);
+        double combined = Math.min(1, Math.max(-1, setpoint * kV + power));
+
+        shooterTop.setPower(combined + Math.signum(power) * kStatic);
+        shooterBottom.setPower(combined + Math.signum(power) * kStatic);
 
         // Output shooter calculations to driver station & dashboard
         displayData("Shooter RPM",shooterRPM);

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.utility.PIDController;
 @Config
 public class ShooterTuner extends RobotHardware {
 
-    public static double shooterP = 0.0045, shooterI = 0, shooterD = 0;
+    public static double shooterP = 0.0, shooterI = 0, shooterD = 0;
     private boolean slowModeEnabled = false;
     private static final double DRIVE_SLOW_MODE_MULTIPLIER = 0.25;
     protected PIDController shooterPID = new PIDController(shooterP, shooterI, shooterD);
@@ -19,6 +19,7 @@ public class ShooterTuner extends RobotHardware {
     // Set point is RPM
     public static double tolerance = 20, setpoint = 0;
     public static double kStatic = 0.06;
+    public static double kV = 0.000169;
 
     @Override
     public void init() {
@@ -62,12 +63,15 @@ public class ShooterTuner extends RobotHardware {
         double rpm = shooterTop.getVelocity() / 28.0 * 60.0;
         double power = shooterPID.calculate(rpm, setpoint);
 
-        shooterTop.setPower(power + Math.signum(power) * kStatic);
-        shooterBottom.setPower(power + Math.signum(power) * kStatic);
+        double combined = Math.min(1, Math.max(-1, setpoint * kV + power));
+
+        shooterTop.setPower(combined + Math.signum(power) * kStatic);
+        shooterBottom.setPower(combined + Math.signum(power) * kStatic);
 
         displayData("Shooter RPM", rpm);
         displayData("Setpoint", setpoint);
         displayData("PID Power", power);
+        displayData("kV power", setpoint * kV);
 
         // Reset gyro angle if triangle is pressed
         if (driver1.triangleOnce()) {
