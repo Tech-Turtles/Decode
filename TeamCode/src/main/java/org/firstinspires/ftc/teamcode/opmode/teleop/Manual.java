@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import static org.firstinspires.ftc.teamcode.utility.Constants.*;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.utility.Constants;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
@@ -20,16 +23,9 @@ public class Manual extends RobotHardware {
     private final double tolerance = 20;
     public static double kStatic = 0.06;
     private double setpoint = 0;
-    public static double lowTriangle = 4775;
-    public static double highTriangleEnd = 3500;
-    public static double highTriangleMid = 2500;
-    public static double highTriangleClose = 2200;
 
-    public static double gateOpen = 0.68;
 
-    public static double gateClosed = 1;
 
-    public static double gateOpenDurationSeconds = 0.3;
 
     private final ElapsedTimer gateTimer = new ElapsedTimer();
     private boolean gateTimerActive;
