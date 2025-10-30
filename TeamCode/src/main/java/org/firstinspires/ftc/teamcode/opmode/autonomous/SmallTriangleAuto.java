@@ -57,7 +57,7 @@ public class SmallTriangleAuto extends RobotHardware {
         drive = new MecanumDrive(hardwareMap, new Pose2d(-72+robotHalfW, (0+robotHalfW), Math.toRadians(90-67.0)));
 
         TrajectoryActionBuilder moveForward =
-                drive.actionBuilder(new Pose2d(-72+robotHalfW, (0+robotHalfW), Math.toRadians(90-67))).lineToX(-72+robotHalfW+20);
+                drive.actionBuilder(new Pose2d(-72+robotHalfW, (0+robotHalfW), Math.toRadians(90-67))).lineToX(-72+robotHalfW+  20);
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -25,6 +26,7 @@ public class RobotHardware extends OpMode {
     protected DcMotorEx intake;
     protected ServoImplEx gate;
     protected IMU imu;
+    protected Limelight3A limelight;
 
     protected Controller driver1, driver2;
     protected final FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -75,6 +77,12 @@ public class RobotHardware extends OpMode {
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
                 RevHubOrientationOnRobot.UsbFacingDirection.UP));
         imu.initialize(parameters);
+
+        limelight = hardwareMap.get(Limelight3A.class, "Limelight");
+
+        telemetry.setMsTransmissionInterval(11);
+
+        limelight.pipelineSwitch(0);
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
         timer = new ElapsedTimer();

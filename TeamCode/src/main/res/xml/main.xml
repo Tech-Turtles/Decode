@@ -17,5 +17,5 @@
             <goBILDA5202SeriesMotor     name = "ShooterBottom"  port = "2" />
         </LynxModule>
     </LynxUsbDevice>
-    <EthernetDevice name="Ethernet Device" serialNumber="EthernetOverUsb:eth0:172.29.0.23" port="0" ipAddress="172.29.0.1" />
+    <EthernetDevice name="Limelight" serialNumber="EthernetOverUsb:eth0:172.29.0.23" port="0" ipAddress="172.29.0.1" />
 </Robot>

@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.opmode.teleop;
 import static org.firstinspires.ftc.teamcode.utility.Constants.*;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -10,7 +13,8 @@ import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.utility.Constants;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
-
+import java.util.ArrayList;
+import java.util.List;
 @TeleOp
 @Config
 public class Manual extends RobotHardware {
@@ -20,15 +24,15 @@ public class Manual extends RobotHardware {
     private final double shooterP = 0.003, shooterI = 0, shooterD = 0;
     protected PIDController shooterPID = new PIDController(shooterP, shooterI, shooterD);
     // Set point is RPM
-    private final double tolerance = 20;
+    private final double tolerance = 75;
     public static double kStatic = 0.06;
     private double setpoint = 0;
-
-
-
-
     private final ElapsedTimer gateTimer = new ElapsedTimer();
     private boolean gateTimerActive;
+    List<Integer> shotRPMList = new ArrayList<>();
+    public static double llP = 0.0325, llI = 0, llD = 0.0005;
+    private double prevP, prevI, prevD;
+    protected PIDController llAnglePID = new PIDController(llP, llI, llD);
 
     @Override
     public void init() {
@@ -47,11 +51,29 @@ public class Manual extends RobotHardware {
         super.start();
         shooterPID.setPID(shooterP, shooterI, shooterD);
         shooterPID.setTolerance(tolerance);
+        limelight.start();
     }
 
     @Override
     public void loop() {
         super.loop();
+
+        LLStatus status = limelight.getStatus();
+
+        // Calculate shooter rpm; ticks per second to rpm
+        // 6000 rpm motor is 28 ticks per rotation
+        double shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
+        double power = shooterPID.calculate(shooterRPM, setpoint);
+        double combined = Math.min(1, Math.max(-1, setpoint * kV + power));
+
+        if (shooterPID.atSetpoint() && setpoint != 0)
+        {
+            driver2.setLedColor(0, 255, 0, -1);
+        }
+        else
+        {
+            driver2.setLedColor(255, 0, 0, -1);
+        }
 
         // If slow mode is on then update the slow speed multiplier
         double slowSpeed = 1;
@@ -64,6 +86,39 @@ public class Manual extends RobotHardware {
         double y = Math.pow(-driver1.left_stick_y, 3);
         double x = Math.pow(driver1.left_stick_x * 1.1, 3);
         double rx = Math.pow(driver1.right_stick_x, 3);
+
+        if(prevP != llP || prevI != llI || prevD != llD)
+        {
+            llAnglePID.setPID(llP, llI, llD);
+
+            prevP = llP;
+            prevI = llI;
+            prevD = llD;
+        }
+
+        LLResult result = limelight.getLatestResult();
+        if (result.isValid()) {
+            double captureLatency = result.getCaptureLatency();
+            double targetingLatency = result.getTargetingLatency();
+            double parseLatency = result.getParseLatency();
+            telemetry.addData("LL Latency", captureLatency + targetingLatency);
+            telemetry.addData("Parse Latency", parseLatency);
+            telemetry.addData("PythonOutput", java.util.Arrays.toString(result.getPythonOutput()));
+
+            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+            for (LLResultTypes.FiducialResult fr : fiducialResults) {
+                telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(), fr.getTargetXDegrees(), fr.getTargetYDegrees());
+
+                if (fr.getFiducialId() == 24 || fr.getFiducialId() == 20)
+                {
+                    if (driver1.right_trigger >= 0.5) {
+                        rx = -(llAnglePID.calculate(fr.getTargetXDegrees(), 0));
+                        displayData("Limelight rotation", rx);
+                    }
+
+                }
+            }
+        }
 
         if (gamepad1.options) {
             imu.resetYaw();
@@ -115,6 +170,7 @@ public class Manual extends RobotHardware {
             gateTimerActive = true;
             gateTimer.reset();
             gate.setPosition(gateOpen);
+            shotRPMList.add( (int) shooterRPM);
         } else if (gateTimerActive) {
             if (gateTimer.seconds() > gateOpenDurationSeconds)
             {
@@ -125,14 +181,13 @@ public class Manual extends RobotHardware {
             gate.setPosition(gateClosed);
         }
 
-        // Calculate shooter rpm; ticks per second to rpm
-        // 6000 rpm motor is 28 ticks per rotation
-        double shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
-        double power = shooterPID.calculate(shooterRPM, setpoint);
-        double combined = Math.min(1, Math.max(-1, setpoint * kV + power));
-
-        shooterTop.setPower(combined + Math.signum(power) * kStatic);
-        shooterBottom.setPower(combined + Math.signum(power) * kStatic);
+        if (setpoint != 0) {
+            shooterTop.setPower(combined + Math.signum(power) * kStatic);
+            shooterBottom.setPower(combined + Math.signum(power) * kStatic);
+        } else {
+            shooterTop.setPower(0);
+            shooterBottom.setPower(0);
+        }
 
         // Output shooter calculations to driver station & dashboard
         displayData("Shooter RPM",shooterRPM);
@@ -140,5 +195,8 @@ public class Manual extends RobotHardware {
         displayData("PID Power", power);
         displayData("Gate Timer (sec)", gateTimer.seconds());
         displayData("Heading (deg)", Math.toDegrees(botHeading));
+        displayData("Shooter RPM on everyshot", shotRPMList);
+        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
+                status.getTemp(), status.getCpu(),(int)status.getFps());
     }
 }
