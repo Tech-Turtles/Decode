@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.roadrunner.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.utility.Constants;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
@@ -33,6 +34,8 @@ public class Manual extends RobotHardware {
     public static double llP = 0.0325, llI = 0, llD = 0.0005;
     private double prevP, prevI, prevD;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
+    private static double llAngleSetpoint = 0;
+    private static int allianceColor = 0; //0 being blue 1 being red
 
     @Override
     public void init() {
@@ -87,7 +90,18 @@ public class Manual extends RobotHardware {
         double x = Math.pow(driver1.left_stick_x * 1.1, 3);
         double rx = Math.pow(driver1.right_stick_x, 3);
 
-        if(prevP != llP || prevI != llI || prevD != llD)
+        if (driver1.dpadUpOnce() && allianceColor <= 0) {
+            allianceColor = 1;
+            driver1.setLedColor(255,5, 0, -1);
+            llAngleSetpoint = redLLAngleOffset;
+        } else if (driver1.dpadUpOnce() && allianceColor >= 1) {
+            allianceColor = 0;
+            driver1.setLedColor(0, 20, 255, -1);
+            llAngleSetpoint = blueLLAngleOffset;
+        }
+
+
+        if (prevP != llP || prevI != llI || prevD != llD )
         {
             llAnglePID.setPID(llP, llI, llD);
 
@@ -112,7 +126,7 @@ public class Manual extends RobotHardware {
                 if (fr.getFiducialId() == 24 || fr.getFiducialId() == 20)
                 {
                     if (driver1.right_trigger >= 0.5) {
-                        rx = -(llAnglePID.calculate(fr.getTargetXDegrees(), 0));
+                        rx = -(llAnglePID.calculate(fr.getTargetXDegrees(), llAngleSetpoint));
                         displayData("Limelight rotation", rx);
                     }
 
@@ -125,6 +139,7 @@ public class Manual extends RobotHardware {
         }
 
         double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
 
         // Rotate the movement direction counter to the bot's rotation
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);

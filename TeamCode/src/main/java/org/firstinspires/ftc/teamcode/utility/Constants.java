@@ -14,6 +14,7 @@ public final class Constants {
     public static double gateOpen = 0.68;
     public static double gateClosed = 1;
     public static double gateOpenDurationSeconds = 0.3-0.025;
-    public boolean lowTriangleRPMRange;
+    public static double redLLAngleOffset = 2.5;
+    public static double blueLLAngleOffset = 7.0;
 
 }
