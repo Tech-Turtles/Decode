@@ -1,17 +1,21 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterD;
+import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterI;
+import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.*;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.roadrunner.PinpointLocalizer;
-import org.firstinspires.ftc.teamcode.utility.Constants;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 import java.util.ArrayList;
@@ -19,10 +23,7 @@ import java.util.List;
 @TeleOp
 @Config
 public class Manual extends RobotHardware {
-    public static double superSlowMode = 0.25;
-    public static double slowModeSpeed = 0.5;
     private final double kV = 0.000169;
-    private final double shooterP = 0.003, shooterI = 0, shooterD = 0;
     protected PIDController shooterPID = new PIDController(shooterP, shooterI, shooterD);
     // Set point is RPM
     private final double tolerance = 75;
@@ -31,10 +32,9 @@ public class Manual extends RobotHardware {
     private final ElapsedTimer gateTimer = new ElapsedTimer();
     private boolean gateTimerActive;
     List<Integer> shotRPMList = new ArrayList<>();
-    public static double llP = 0.0325, llI = 0, llD = 0.0005;
+
     private double prevP, prevI, prevD;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
-    private static double llAngleSetpoint = 0;
     private static int allianceColor = 0; //0 being blue 1 being red
 
     @Override
@@ -135,6 +135,10 @@ public class Manual extends RobotHardware {
         }
 
         if (gamepad1.options) {
+            IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                    RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                    RevHubOrientationOnRobot.UsbFacingDirection.UP));
+            imu.initialize(parameters);
             imu.resetYaw();
         }
 

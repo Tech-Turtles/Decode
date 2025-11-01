@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
+
+import static  org.firstinspires.ftc.teamcode.utility.Constants.*;
+
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
@@ -11,6 +14,8 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -19,11 +24,12 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
-import static org.firstinspires.ftc.teamcode.utility.Constants.*;
+
+import java.util.List;
 
 @Autonomous
 @Config
-public class SmallTriangleAuto extends RobotHardware {
+public class LimelightSmallTriangleAuto extends RobotHardware {
 
     private MecanumDrive drive;
     private Canvas canvas;
@@ -47,6 +53,7 @@ public class SmallTriangleAuto extends RobotHardware {
     public static double gateClosed = 1;
 
     public static double gateOpenDurationSeconds = 0.3;
+    protected PIDController llAnglePID = new PIDController(llP, llI, llD);
 
     private final ElapsedTimer gateTimer = new ElapsedTimer();
 
@@ -55,6 +62,7 @@ public class SmallTriangleAuto extends RobotHardware {
         super.init();
         gate.setPosition(gateClosed);
         drive = new MecanumDrive(hardwareMap, new Pose2d(-72+robotHalfW, (0+robotHalfW), Math.toRadians(90-67.0)));
+
 
         TrajectoryActionBuilder moveForward =
                 drive.actionBuilder(new Pose2d(-72+robotHalfW, (0+robotHalfW), Math.toRadians(90-67))).lineToX(-72+robotHalfW+  20);
@@ -79,8 +87,6 @@ public class SmallTriangleAuto extends RobotHardware {
                     gate.setPosition(gateClosed);
                 }),
                 new SleepAction(1),
-
-
 
                 new InstantAction(() ->
                 {
@@ -171,4 +177,18 @@ public class SmallTriangleAuto extends RobotHardware {
         }
     }
 
+    public void llAim(){
+        LLResult result = limelight.getLatestResult();
+        if (result.isValid()) {
+            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+            for (LLResultTypes.FiducialResult fr : fiducialResults) {
+                telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(), fr.getTargetXDegrees(), fr.getTargetYDegrees());
+                if (fr.getFiducialId() == 24 || fr.getFiducialId() == 20)
+                {
+                    drive.setDrivePowers(new PoseVelocity2d()); = -(llAnglePID.calculate(fr.getTargetXDegrees(), llAngleSetpoint));
+                    displayData("Limelight rotation", rx);
+                }
+            }
+        }
+    }
 }
