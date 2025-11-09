@@ -1,13 +1,6 @@
 package org.firstinspires.ftc.teamcode.utility;
 
-import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterD;
-import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterI;
-import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterP;
-
 import com.acmerobotics.dashboard.config.Config;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Config
 public final class Constants {
@@ -18,12 +11,17 @@ public final class Constants {
     public static double gateOpen = 0.68;
     public static double gateClosed = 1;
     public static double gateOpenDurationSeconds = 0.3-0.025;
-    public static double redLLAngleOffset = 2.5;
-    public static double blueLLAngleOffset = 7.0;
-    public static double llP = 0.035, llI = 0, llD = 0.00075;
-    public final double shooterP = 0.003, shooterI = 0, shooterD = 0;
+    public static double redLLAngleOffset = 3;
+    public static double blueLLAngleOffset = 0;
+    public static double llP = 3.0 , llI = 0.7, llD = 0.0;
+    public static double shooterP = 0.003, shooterI = 0, shooterD = 0;
+    public static double kV = 0.000169;
+    public static double tolerance = 75;
+    public static double kStatic = 0.06;
     public static double superSlowMode = 0.25;
     public static double slowModeSpeed = 0.5;
     public static double llAngleSetpoint = 0;
+    public static double robotHalfWidth = (16.0 +(7/8.0))/2.0;
+    public static double robotHalfLength = (16.5)/2.0;
 
 }

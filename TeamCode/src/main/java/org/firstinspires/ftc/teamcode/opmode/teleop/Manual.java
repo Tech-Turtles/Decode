@@ -1,33 +1,48 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
-import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterD;
-import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterI;
-import static org.firstinspires.ftc.teamcode.opmode.teleop.ShooterTuner.shooterP;
-import static org.firstinspires.ftc.teamcode.utility.Constants.*;
+import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpen;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpenDurationSeconds;
+import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleClose;
+import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleEnd;
+import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleMid;
+import static org.firstinspires.ftc.teamcode.utility.Constants.kStatic;
+import static org.firstinspires.ftc.teamcode.utility.Constants.kV;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llAngleSetpoint;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
+import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
+import static org.firstinspires.ftc.teamcode.utility.Constants.redLLAngleOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
+import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
+import static org.firstinspires.ftc.teamcode.utility.Constants.shooterD;
+import static org.firstinspires.ftc.teamcode.utility.Constants.shooterI;
+import static org.firstinspires.ftc.teamcode.utility.Constants.shooterP;
+import static org.firstinspires.ftc.teamcode.utility.Constants.slowModeSpeed;
+import static org.firstinspires.ftc.teamcode.utility.Constants.superSlowMode;
+import static org.firstinspires.ftc.teamcode.utility.Constants.tolerance;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Twist2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.limelightvision.LLStatus;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.teamcode.roadrunner.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
+
 import java.util.ArrayList;
 import java.util.List;
 @TeleOp
 @Config
 public class Manual extends RobotHardware {
-    private final double kV = 0.000169;
+
     protected PIDController shooterPID = new PIDController(shooterP, shooterI, shooterD);
     // Set point is RPM
-    private final double tolerance = 75;
-    public static double kStatic = 0.06;
     private double setpoint = 0;
     private final ElapsedTimer gateTimer = new ElapsedTimer();
     private boolean gateTimerActive;
@@ -36,11 +51,14 @@ public class Manual extends RobotHardware {
     private double prevP, prevI, prevD;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private static int allianceColor = 0; //0 being blue 1 being red
+    private double fieldDriveOffsetDeg = -90;
+
+    public static double rotationKs = 0.07;
 
     @Override
     public void init() {
         super.init();
-
+        llAnglePID.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     @Override
@@ -86,18 +104,20 @@ public class Manual extends RobotHardware {
            slowSpeed = superSlowMode;
         }
 
-        double y = Math.pow(-driver1.left_stick_y, 3);
-        double x = Math.pow(driver1.left_stick_x * 1.1, 3);
+        double x = Math.pow(-driver1.left_stick_y, 3);
+        double y = Math.pow(driver1.left_stick_x * 1.1, 3);
         double rx = Math.pow(driver1.right_stick_x, 3);
 
         if (driver1.dpadUpOnce() && allianceColor <= 0) {
             allianceColor = 1;
-            driver1.setLedColor(255,5, 0, -1);
+            driver1.setLedColor(255,2, 0, -1);
             llAngleSetpoint = redLLAngleOffset;
+            fieldDriveOffsetDeg = -90;
         } else if (driver1.dpadUpOnce() && allianceColor >= 1) {
             allianceColor = 0;
             driver1.setLedColor(0, 20, 255, -1);
             llAngleSetpoint = blueLLAngleOffset;
+            fieldDriveOffsetDeg = 90;
         }
 
 
@@ -110,60 +130,74 @@ public class Manual extends RobotHardware {
             prevD = llD;
         }
 
-        LLResult result = limelight.getLatestResult();
-        if (result.isValid()) {
-            double captureLatency = result.getCaptureLatency();
-            double targetingLatency = result.getTargetingLatency();
-            double parseLatency = result.getParseLatency();
-            telemetry.addData("LL Latency", captureLatency + targetingLatency);
-            telemetry.addData("Parse Latency", parseLatency);
-            telemetry.addData("PythonOutput", java.util.Arrays.toString(result.getPythonOutput()));
+        if (driver1.crossOnce())
+              drive.localizer.setPose(new Pose2d((72- robotHalfWidth), (-72 + robotHalfLength), Math.toRadians(90)));
 
-            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-            for (LLResultTypes.FiducialResult fr : fiducialResults) {
-                telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(), fr.getTargetXDegrees(), fr.getTargetYDegrees());
+        Pose2d robot = drive.localizer.getPose().plus(new Twist2d(new Vector2d(0, 0),0));
+        Pose2d target;
+        double offset;
 
-                if (fr.getFiducialId() == 24 || fr.getFiducialId() == 20)
-                {
-                    if (driver1.right_trigger >= 0.5) {
-                        rx = -(llAnglePID.calculate(fr.getTargetXDegrees(), llAngleSetpoint));
-                        displayData("Limelight rotation", rx);
-                    }
+        if (allianceColor == 1)
+        {
+            target = new Pose2d(-72, 72, 0);
+            offset = redLLAngleOffset;
+        }
+        else
+        {
+            target = new Pose2d(-72, -72, 0);
+            offset = blueLLAngleOffset;
+        }
+        double deltaX = target.position.x - robot.position.x;
+        double deltaY = target.position.y - robot.position.y;
+        double headingToTarget = Math.atan2(deltaY, deltaX) + Math.toRadians(offset);
+        while (headingToTarget > Math.PI)
+            headingToTarget -= Math.PI;
+        while (headingToTarget < -Math.PI)
+            headingToTarget += Math.PI;
+        telemetry.addData("Target Pose", "X: %.2f Y: %.2f", target.position.x, target.position.y);
+        telemetry.addData("Delta Pose", "X: %.2f Y: %.2f", deltaX, deltaY);
+        displayData("Heading To Target", Math.toDegrees(headingToTarget));
 
-                }
-            }
+        if (driver1.right_trigger >= 0.5)
+        {
+            double ff = 0;
+            if (headingToTarget-robot.heading.toDouble() > 0.001)
+                ff = rotationKs * Math.signum(headingToTarget-robot.heading.toDouble());
+            rx = llAnglePID.calculate(headingToTarget, robot.heading.toDouble()) - ff;
+        }
+        displayData("rx", rx);
+
+//        LLResult result = limelight.getLatestResult();
+//        if (result.isValid()) {
+//            double captureLatency = result.getCaptureLatency();
+//            double targetingLatency = result.getTargetingLatency();
+//            double parseLatency = result.getParseLatency();
+//            telemetry.addData("LL Latency", captureLatency + targetingLatency);
+//            telemetry.addData("Parse Latency", parseLatency);
+//            telemetry.addData("PythonOutput", java.util.Arrays.toString(result.getPythonOutput()));
+//
+//            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+//            for (LLResultTypes.FiducialResult fr : fiducialResults) {
+//                telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(), fr.getTargetXDegrees(), fr.getTargetYDegrees());
+//
+//                if (fr.getFiducialId() == 24 || fr.getFiducialId() == 20)
+//                {
+//                    if (driver1.right_trigger >= 0.5) {
+//                        rx = -(llAnglePID.calculate(fr.getTargetXDegrees(), llAngleSetpoint));
+//                        displayData("Limelight rotation", rx);
+//                    }
+//
+//                }
+//            }
+//        }
+
+        if (gamepad1.ps) {
+            drive.localizer.setPose(new Pose2d(0,0,0));
+            fieldDriveOffsetDeg = 0;
         }
 
-        if (gamepad1.options) {
-            IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                    RevHubOrientationOnRobot.UsbFacingDirection.UP));
-            imu.initialize(parameters);
-            imu.resetYaw();
-        }
+        drive.setDrivePowersField(x*slowSpeed, -y*slowSpeed, rx*slowSpeed, fieldDriveOffsetDeg);
 
-        double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-
-        // Rotate the movement direction counter to the bot's rotation
-        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
-
-        rotX = rotX * 1.1;  // Counteract imperfect strafing
-
-        // Denominator is the largest motor power (absolute value) or 1
-        // This ensures all the powers maintain the same ratio,
-        // but only if at least one is out of the range [-1, 1]
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-        double frontLeftPower = (rotY + rotX + rx) * slowSpeed / denominator;
-        double rearLeftPower = (rotY - rotX + rx) * slowSpeed / denominator;
-        double frontRightPower = (rotY - rotX - rx) * slowSpeed / denominator;
-        double rearRightPower = (rotY + rotX - rx) *slowSpeed / denominator;
-
-        frontLeft.setPower(frontLeftPower);
-        rearLeft.setPower(rearLeftPower);
-        frontRight.setPower(frontRightPower);
-        rearRight.setPower(rearRightPower);
 
         // Intake control - Forward and backwards
         double intakeF = driver1.left_trigger;
@@ -213,7 +247,6 @@ public class Manual extends RobotHardware {
         displayData("Setpoint RPM", setpoint);
         displayData("PID Power", power);
         displayData("Gate Timer (sec)", gateTimer.seconds());
-        displayData("Heading (deg)", Math.toDegrees(botHeading));
         displayData("Shooter RPM on everyshot", shotRPMList);
         telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
                 status.getTemp(), status.getCpu(),(int)status.getFps());

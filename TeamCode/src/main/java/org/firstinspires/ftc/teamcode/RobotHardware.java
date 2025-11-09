@@ -2,32 +2,28 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utility.Controller;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 
 public class RobotHardware extends OpMode {
 
-    // Drive motors
-    protected DcMotorEx frontLeft, frontRight, rearLeft, rearRight;
     // Shooter motors
     protected DcMotorEx shooterTop, shooterBottom;
     // Intake motor
     protected DcMotorEx intake;
     protected ServoImplEx gate;
-    protected IMU imu;
     protected Limelight3A limelight;
-
+    protected MecanumDrive drive;
     protected Controller driver1, driver2;
     protected final FtcDashboard dashboard = FtcDashboard.getInstance();
     protected TelemetryPacket packet = new TelemetryPacket();
@@ -40,11 +36,6 @@ public class RobotHardware extends OpMode {
      */
     @Override
     public void init() {
-        frontLeft = hardwareMap.get(DcMotorEx.class, "FrontLeftDrive");
-        frontRight = hardwareMap.get(DcMotorEx.class, "FrontRightDrive");
-        rearLeft = hardwareMap.get(DcMotorEx.class, "RearLeftDrive");
-        rearRight = hardwareMap.get(DcMotorEx.class, "RearRightDrive");
-
         intake = hardwareMap.get(DcMotorEx.class, "Intake");
 
         gate = hardwareMap.get(ServoImplEx.class,"Gate");
@@ -52,31 +43,13 @@ public class RobotHardware extends OpMode {
         shooterTop = hardwareMap.get(DcMotorEx.class, "ShooterTop");
         shooterBottom = hardwareMap.get(DcMotorEx.class, "ShooterBottom");
 
-        rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterBottom.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        rearRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rearLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         shooterTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooterBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        rearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
         shooterTop.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterBottom.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        imu = hardwareMap.get(IMU.class, "IMU");
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.UP));
-        imu.initialize(parameters);
 
         limelight = hardwareMap.get(Limelight3A.class, "Limelight");
 
@@ -89,6 +62,8 @@ public class RobotHardware extends OpMode {
 
         driver1 = new Controller(gamepad1);
         driver2 = new Controller(gamepad2);
+
+        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.toRadians(0)));
     }
 
     @Override
@@ -100,6 +75,10 @@ public class RobotHardware extends OpMode {
         packet = new TelemetryPacket();
         timer.updatePeriodTime();
         displayData("Loop Time", timer.getAveragePeriodSec());
+        drive.updatePoseEstimate();
+        displayData("Heading (deg)", Math.toDegrees(drive.localizer.getPose().heading.toDouble()));
+        displayData("x", drive.localizer.getPose().position.x);
+        displayData("y", drive.localizer.getPose().position.y);
     }
 
     @Override
@@ -116,6 +95,10 @@ public class RobotHardware extends OpMode {
         packet = new TelemetryPacket();
         timer.updatePeriodTime();
         displayData("Loop Time", timer.getAveragePeriodSec());
+        drive.updatePoseEstimate();
+        displayData("Heading (deg)", Math.toDegrees(drive.localizer.getPose().heading.toDouble()));
+        displayData("x", drive.localizer.getPose().position.x);
+        displayData("y", drive.localizer.getPose().position.y);
     }
 
     @Override

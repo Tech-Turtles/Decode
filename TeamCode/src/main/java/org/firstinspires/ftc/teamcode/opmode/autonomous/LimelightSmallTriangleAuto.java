@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
-
-import static  org.firstinspires.ftc.teamcode.utility.Constants.*;
+import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
+import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llAngleSetpoint;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
+import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
+import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
@@ -18,12 +23,9 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
-
 
 import java.util.List;
 
@@ -31,15 +33,12 @@ import java.util.List;
 @Config
 public class LimelightSmallTriangleAuto extends RobotHardware {
 
-    private MecanumDrive drive;
     private Canvas canvas;
     private Action autonomous;
     private double shooterSetPoint = 0.0;
     private boolean shouldRun;
 
     private static double previousTime = 0;
-
-    private static double robotHalfW = (16.0 +(7/8.0))/2.0;
 
     private final double kV = 0.000169;
     private final double shooterP = 0.003, shooterI = 0, shooterD = 0;
@@ -61,15 +60,20 @@ public class LimelightSmallTriangleAuto extends RobotHardware {
     public void init() {
         super.init();
         gate.setPosition(gateClosed);
-        drive = new MecanumDrive(hardwareMap, new Pose2d(-72+robotHalfW, (0+robotHalfW), Math.toRadians(90-67.0)));
+        drive.localizer.setPose(new Pose2d(-72+robotHalfWidth, (0+robotHalfLength), Math.toRadians(90-67.0)));
 
+
+        TrajectoryActionBuilder moveForwardFinal =
+                drive.actionBuilder(new Pose2d(-72+robotHalfWidth, (0+robotHalfLength), Math.toRadians(90-67))).lineToX(-72+robotHalfWidth+  20);
 
         TrajectoryActionBuilder moveForward =
-                drive.actionBuilder(new Pose2d(-72+robotHalfW, (0+robotHalfW), Math.toRadians(90-67))).lineToX(-72+robotHalfW+  20);
+                drive.actionBuilder(new Pose2d(-72+robotHalfWidth+5, (0+robotHalfLength), Math.toRadians(90-67))).lineToX(-72+robotHalfWidth+  20);
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         autonomous = new SequentialAction(
+                moveForward.build(),
+                new InstantAction(this::llAim),
                 new InstantAction(() -> //does on start, Shoot 3 balls
                 {
                     shooterSetPoint = lowTriangle;
@@ -120,7 +124,7 @@ public class LimelightSmallTriangleAuto extends RobotHardware {
                 }),
 
 
-                moveForward.build()
+                moveForwardFinal.build()
         );
 
         canvas = new Canvas();
@@ -130,11 +134,6 @@ public class LimelightSmallTriangleAuto extends RobotHardware {
     @Override
     public void init_loop() {
         super.init_loop();
-        displayData("Front Left Drive Motor Position", frontLeft.getCurrentPosition());
-        displayData("Front Right Drive Motor Position", frontRight.getCurrentPosition());
-        displayData("Rear Left Drive Motor Position", rearLeft.getCurrentPosition());
-        displayData("Rear Right Drive Motor Position", rearRight.getCurrentPosition());
-        displayData("IMU angle", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
     }
 
     @Override
@@ -144,6 +143,7 @@ public class LimelightSmallTriangleAuto extends RobotHardware {
 
         shooterPID.setPID(shooterP, shooterI, shooterD);
         shooterPID.setTolerance(tolerance);
+        limelight.start();
     }
 
     @Override
@@ -165,7 +165,6 @@ public class LimelightSmallTriangleAuto extends RobotHardware {
 
             shouldRun = autonomous.run(packet);
 
-
             shooterTop.setPower(combined + Math.signum(power) * kStatic);
             shooterBottom.setPower(combined + Math.signum(power) * kStatic);
 
@@ -177,6 +176,7 @@ public class LimelightSmallTriangleAuto extends RobotHardware {
         }
     }
 
+
     public void llAim(){
         LLResult result = limelight.getLatestResult();
         if (result.isValid()) {
@@ -185,8 +185,8 @@ public class LimelightSmallTriangleAuto extends RobotHardware {
                 telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(), fr.getTargetXDegrees(), fr.getTargetYDegrees());
                 if (fr.getFiducialId() == 24 || fr.getFiducialId() == 20)
                 {
-                    drive.setDrivePowers(new PoseVelocity2d()); = -(llAnglePID.calculate(fr.getTargetXDegrees(), llAngleSetpoint));
-                    displayData("Limelight rotation", rx);
+                    while ((int)fr.getTargetXDegrees() != (int)llAngleSetpoint)
+                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0.0, 0.0) , -(llAnglePID.calculate(fr.getTargetXDegrees(), llAngleSetpoint))));
                 }
             }
         }

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
+import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
+
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
@@ -13,13 +15,10 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
-
-import static org.firstinspires.ftc.teamcode.utility.Constants.*;
 
 @Autonomous
 @Config
@@ -124,11 +123,6 @@ public class SmallTriangleAuto extends RobotHardware {
     @Override
     public void init_loop() {
         super.init_loop();
-        displayData("Front Left Drive Motor Position", frontLeft.getCurrentPosition());
-        displayData("Front Right Drive Motor Position", frontRight.getCurrentPosition());
-        displayData("Rear Left Drive Motor Position", rearLeft.getCurrentPosition());
-        displayData("Rear Right Drive Motor Position", rearRight.getCurrentPosition());
-        displayData("IMU angle", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
     }
 
     @Override
