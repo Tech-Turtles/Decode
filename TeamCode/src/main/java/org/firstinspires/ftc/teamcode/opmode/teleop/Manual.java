@@ -26,6 +26,7 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.tolerance;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.limelightvision.LLStatus;
@@ -52,8 +53,11 @@ public class Manual extends RobotHardware {
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private static int allianceColor = 0; //0 being blue 1 being red
     private double fieldDriveOffsetDeg = -90;
-
+    public static double kicking = 1;
+    public static double kicked = 0;
     public static double rotationKs = 0.07;
+
+    public static boolean robotCentric = false;
 
     @Override
     public void init() {
@@ -195,8 +199,14 @@ public class Manual extends RobotHardware {
             drive.localizer.setPose(new Pose2d(0,0,0));
             fieldDriveOffsetDeg = 0;
         }
+        
+        if (driver1.triangleOnce())
+            robotCentric = !robotCentric;
 
-        drive.setDrivePowersField(x*slowSpeed, -y*slowSpeed, rx*slowSpeed, fieldDriveOffsetDeg);
+        if (robotCentric)
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(x*slowSpeed, -y*slowSpeed), rx*slowSpeed));
+        else
+            drive.setDrivePowersField(x*slowSpeed, -y*slowSpeed, rx*slowSpeed, fieldDriveOffsetDeg);
 
 
         // Intake control - Forward and backwards
@@ -240,6 +250,15 @@ public class Manual extends RobotHardware {
         } else {
             shooterTop.setPower(0);
             shooterBottom.setPower(0);
+        }
+
+
+        if (driver2.right_trigger > 0.25) {
+           kickerLeft.setPosition(kicking);
+           kickerRight.setPosition(kicking);
+        } else {
+            kickerLeft.setPosition(kicked);
+            kickerRight.setPosition(kicked);
         }
 
         // Output shooter calculations to driver station & dashboard

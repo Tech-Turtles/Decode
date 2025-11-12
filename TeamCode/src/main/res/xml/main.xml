@@ -8,6 +8,8 @@
             <goBILDA5202SeriesMotor     name =  "RearLeftDrive"    port = "2" />
             <goBILDA5202SeriesMotor     name =  "RearRightDrive"   port = "3" />
             <Servo                      name =  "Gate" port = "0" />
+            <Servo                      name =  "KickerLeft" port = "1" />
+            <Servo                      name =  "KickerRight" port = "2" />
             <ControlHubImuBHI260AP      name=   "IMU" port="0" bus="0" />
             <goBILDAPinpoint            name=   "Odo" port="1" bus="0" />
         </LynxModule>

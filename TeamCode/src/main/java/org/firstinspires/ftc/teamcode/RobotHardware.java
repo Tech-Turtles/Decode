@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -29,6 +30,8 @@ public class RobotHardware extends OpMode {
     protected TelemetryPacket packet = new TelemetryPacket();
     ElapsedTimer timer;
 
+    protected ServoImplEx kickerLeft, kickerRight;
+
     /**
      * Initializes all hardware components and their configurations.
      * Sets up motor directions, modes, and zero power behaviors.
@@ -43,7 +46,11 @@ public class RobotHardware extends OpMode {
         shooterTop = hardwareMap.get(DcMotorEx.class, "ShooterTop");
         shooterBottom = hardwareMap.get(DcMotorEx.class, "ShooterBottom");
 
-        shooterBottom.setDirection(DcMotorSimple.Direction.REVERSE);
+        kickerLeft = hardwareMap.get(ServoImplEx.class, "KickerLeft");
+        kickerRight = hardwareMap.get(ServoImplEx.class, "KickerRight");
+
+        shooterTop.setDirection(DcMotorSimple.Direction.REVERSE);
+        kickerRight.setDirection(Servo.Direction.REVERSE);
 
         shooterTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooterBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
