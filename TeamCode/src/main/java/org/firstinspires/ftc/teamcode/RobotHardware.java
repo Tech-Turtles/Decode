@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
+import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
+
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,6 +17,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utility.Controller;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
@@ -83,9 +89,12 @@ public class RobotHardware extends OpMode {
         timer.updatePeriodTime();
         displayData("Loop Time", timer.getAveragePeriodSec());
         drive.updatePoseEstimate();
-        displayData("Heading (deg)", Math.toDegrees(drive.localizer.getPose().heading.toDouble()));
-        displayData("x", drive.localizer.getPose().position.x);
-        displayData("y", drive.localizer.getPose().position.y);
+        Pose2d pose = drive.localizer.getPose();
+        displayData("Heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+        displayData("x", pose.position.x);
+        displayData("y", pose.position.y);
+        packet.fieldOverlay().setStroke("#3F51B5");
+        Drawing.drawRobot(packet.fieldOverlay(), pose);
     }
 
     @Override
@@ -103,9 +112,13 @@ public class RobotHardware extends OpMode {
         timer.updatePeriodTime();
         displayData("Loop Time", timer.getAveragePeriodSec());
         drive.updatePoseEstimate();
-        displayData("Heading (deg)", Math.toDegrees(drive.localizer.getPose().heading.toDouble()));
-        displayData("x", drive.localizer.getPose().position.x);
-        displayData("y", drive.localizer.getPose().position.y);
+        Pose2d pose = drive.localizer.getPose();
+        displayData("Heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+        displayData("x", pose.position.x);
+        displayData("y", pose.position.y);
+        packet.fieldOverlay().setStroke("#3F51B5");
+        Drawing.drawRobot(packet.fieldOverlay(), pose);
+
     }
 
     @Override
@@ -132,5 +145,16 @@ public class RobotHardware extends OpMode {
     public void displayData(String caption, Object data) {
         telemetry.addData(caption, data);
         packet.put(caption, data);
+    }
+
+    public static void drawTarget(Canvas c, Pose2d target, Pose2d robot) {
+        final double TARGET_RADIUS = 2;
+
+        c.setStrokeWidth(1);
+        c.strokeCircle(target.position.x, target.position.y, TARGET_RADIUS);
+
+        Vector2d p1 = robot.position;
+        Vector2d p2 = target.position;
+        c.strokeLine(p1.x, p1.y, p2.x, p2.y);
     }
 }
