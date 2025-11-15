@@ -4,6 +4,9 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public final class Constants {
+    public enum Alliance{
+        RED, BLUE
+    }
     public static double lowTriangle = 4400
             ;
     public static double highTriangleEnd = 3750;

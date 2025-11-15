@@ -42,6 +42,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
+import org.firstinspires.ftc.teamcode.utility.Constants;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
@@ -60,7 +61,6 @@ public class Manual extends RobotHardware {
 
     private double prevP, prevI, prevD;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
-    private static int allianceColor = 0; //0 being blue 1 being red
     private double fieldDriveOffsetDeg = -90;
     public static boolean robotCentric = false;
 
@@ -117,13 +117,13 @@ public class Manual extends RobotHardware {
         double y = Math.pow(driver1.left_stick_x * 1.1, 3);
         double rx = Math.pow(driver1.right_stick_x, 3);
 
-        if (driver1.dpadUpOnce() && allianceColor <= 0) {
-            allianceColor = 1;
+        if (driver1.dpadUpOnce() && alliance == Constants.Alliance.BLUE) {
+            alliance = Constants.Alliance.RED;
             driver1.setLedColor(255,1, 0, -1);
             llAngleSetpoint = redLLAngleOffset;
             fieldDriveOffsetDeg = -90;
-        } else if (driver1.dpadUpOnce() && allianceColor >= 1) {
-            allianceColor = 0;
+        } else if (driver1.dpadUpOnce() && alliance == Constants.Alliance.RED) {
+            alliance = Constants.Alliance.BLUE;
             driver1.setLedColor(0, 20, 255, -1);
             llAngleSetpoint = blueLLAngleOffset;
             fieldDriveOffsetDeg = 90;
@@ -139,14 +139,18 @@ public class Manual extends RobotHardware {
             prevD = llD;
         }
 
-        if (driver1.crossOnce())
-              drive.localizer.setPose(new Pose2d((72- robotHalfWidth), (-72 + robotHalfLength), Math.toRadians(90)));
+        if (driver1.crossOnce()) {
+            if (alliance == Constants.Alliance.BLUE)
+                drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), -(-72 + robotHalfLength), Math.toRadians(90)));
+            else if (alliance == Constants.Alliance.RED)
+                drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), (-72 + robotHalfLength), Math.toRadians(90+180)));
+        }
 
         Pose2d robot = drive.localizer.getPose();
         Pose2d target;
         double offset;
 
-        if (allianceColor == 1)
+        if (alliance == Constants.Alliance.RED)
         {
             target = new Pose2d(-(targetX), targetY, 0);
             offset = redLLAngleOffset;

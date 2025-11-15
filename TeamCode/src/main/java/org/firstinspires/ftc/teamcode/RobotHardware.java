@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.utility.Constants.Alliance.RED;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
 
@@ -19,11 +20,13 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.teamcode.utility.Constants;
 import org.firstinspires.ftc.teamcode.utility.Controller;
 import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 
 public class RobotHardware extends OpMode {
 
+    public static Constants.Alliance alliance = RED;
     // Shooter motors
     protected DcMotorEx shooterTop, shooterBottom;
     // Intake motor
