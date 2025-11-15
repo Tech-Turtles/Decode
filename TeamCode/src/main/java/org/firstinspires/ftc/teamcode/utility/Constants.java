@@ -5,9 +5,9 @@ import com.acmerobotics.dashboard.config.Config;
 @Config
 public final class Constants {
     public enum Alliance{
-        RED, BLUE
+        RED, BLUE, TEST
     }
-    public static double lowTriangle = 4400
+    public static double lowTriangle = 4300
             ;
     public static double highTriangleEnd = 3750;
     public static double highTriangleMid = 3750;
@@ -15,7 +15,7 @@ public final class Constants {
     public static double gateOpen = 0.68;
     public static double gateClosed = 1;
     public static double gateOpenDurationSeconds = 0.3-0.025;
-    public static double redLLAngleOffset = 0;
+    public static double redLLAngleOffset = -0.5;
     public static double blueLLAngleOffset = 0;
     public static double llP = 0.8 , llI = 0.001, llD = 0.1;
     public static double shooterP = 0.003, shooterI = 0, shooterD = 0;

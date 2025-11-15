@@ -58,36 +58,56 @@ public class OdoAuto extends RobotHardware {
     private final ElapsedTimer gateTimer = new ElapsedTimer();
     public static double startX = -72 + robotHalfLength;
     public static double startY = 0 - robotHalfWidth - (24 - robotHalfWidth);
+    public static double moveForwardX = startX + 4;
+    public static double testAutoLowTriangle = 4250;
 
     @Override
     public void init() {
         super.init();
         gate.setPosition(gateClosed);
-        Pose2d moveForwardEnd;
-        TrajectoryActionBuilder moveForwardFinal;
-        TrajectoryActionBuilder moveForward;
+        Pose2d moveForwardEnd = null;
+        TrajectoryActionBuilder moveForwardFinal = null;
+        TrajectoryActionBuilder moveForward = null;
 
         if (alliance == Constants.Alliance.RED){
             drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(180)));
-            moveForwardEnd = new Pose2d(startX + 5+20, startY, Math.toRadians(180));
+
+            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(180));
 
             moveForwardFinal =
-                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(startX + 20);
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX + 20);
 
             moveForward =
-                    drive.actionBuilder(new Pose2d(startX + 5, startY, Math.toRadians(180))).lineToX(startX + 20);
-        } else {
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX);
+
+        } if (alliance == Constants.Alliance.BLUE) {
             drive.localizer.setPose(new Pose2d(startX, -startY, Math.toRadians(180)));
-            moveForwardEnd = new Pose2d(startX + 5+20, -startY, Math.toRadians(90 - 67));
+
+            moveForwardEnd = new Pose2d(moveForwardX, -startY, Math.toRadians(180));
 
             moveForwardFinal =
-                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(90 - 67))).lineToX(startX + 20);
+                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(180))).lineToX(moveForwardX + 20);
 
             moveForward =
-                    drive.actionBuilder(new Pose2d(startX + 5, -startY, Math.toRadians(90 - 67))).lineToX(startX + 20);
+                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(180))).lineToX(moveForwardX);
 
+        }  if (alliance == Constants.Alliance.TEST) {
+            testAutoLowTriangle = lowTriangle - 75;
+
+            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(180)));
+
+            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(180));
+
+            moveForwardFinal =
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX + 20);
+
+            moveForward =
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX);
         }
-        SequentialAction shootSequence = new SequentialAction(
+
+
+        SequentialAction shootSequence =
+                new SequentialAction(
                 new InstantAction(() ->
                 {
                     gate.setPosition(gateOpen);
@@ -97,7 +117,6 @@ public class OdoAuto extends RobotHardware {
                 {
                     gate.setPosition(gateClosed);
                 }),
-                new SleepAction(flipperAdd),
                 new InstantAction(() ->
                 {
                     kickerLeft.setPosition(kicked);
@@ -106,7 +125,7 @@ public class OdoAuto extends RobotHardware {
                 new SleepAction(flipperAdd),
                 new InstantAction(() ->
                 {
-                    kickerLeft.setPosition(kicked);
+                    kickerLeft.setPosition(kicking);
                     kickerRight.setPosition(kicking);
                 }),
                 new SleepAction(1)
@@ -119,12 +138,81 @@ public class OdoAuto extends RobotHardware {
                 drive.actionBuilder(moveForwardEnd).turnTo(OdoAim()).build(),
                 new InstantAction(() -> //does on start, Shoot 3 balls
                 {
-                    shooterSetPoint = lowTriangle;
+                    if (alliance == Constants.Alliance.TEST)
+                        shooterSetPoint = testAutoLowTriangle;
+                    else
+                        shooterSetPoint = testAutoLowTriangle;
                 }),
                 new SleepAction(1.5 + 0.5),
-                shootSequence,
-                shootSequence,
-                shootSequence,
+                new SequentialAction(
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateOpen);
+                        }),
+                        new SleepAction(gateOpenDurationSeconds),
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateClosed);
+                        }),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicked);
+                            kickerRight.setPosition(kicked);
+                        }),
+                        new SleepAction(flipperAdd),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicking);
+                            kickerRight.setPosition(kicking);
+                        }),
+                        new SleepAction(1)
+                ),
+                new SequentialAction(
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateOpen);
+                        }),
+                        new SleepAction(gateOpenDurationSeconds),
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateClosed);
+                        }),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicked);
+                            kickerRight.setPosition(kicked);
+                        }),
+                        new SleepAction(flipperAdd),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicking);
+                            kickerRight.setPosition(kicking);
+                        }),
+                        new SleepAction(1)
+                ),
+                new SequentialAction(
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateOpen);
+                        }),
+                        new SleepAction(gateOpenDurationSeconds),
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateClosed);
+                        }),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicked);
+                            kickerRight.setPosition(kicked);
+                        }),
+                        new SleepAction(flipperAdd),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicking);
+                            kickerRight.setPosition(kicking);
+                        }),
+                        new SleepAction(1)
+                ),
                 new InstantAction(() ->
                 {
                     shooterSetPoint = 0;
@@ -183,19 +271,21 @@ public class OdoAuto extends RobotHardware {
 
     public double OdoAim() {
         Pose2d robot = drive.localizer.getPose();
-        Pose2d target;
-        double offset;
-        if (alliance == Constants.Alliance.RED)
-        {
-            target = new Pose2d((targetX), -targetY, 45);
-            offset = redLLAngleOffset;
+        Pose2d target = null;
+        double offset = 0;
+        
+        if (alliance == Constants.Alliance.RED)  {
+            target = new Pose2d((targetX), -targetY, 0);
+            offset = -4;
+        } if (alliance == Constants.Alliance.BLUE)  {
+            target = new Pose2d((targetX), (targetY), 0);
+            offset = 2;
+        } if (alliance == Constants.Alliance.TEST)  {
+            target = new Pose2d((targetX), targetY, 0);
+            offset = -4;
         }
-        else
-        {
-            target = new Pose2d(-(targetX), -(targetY), 0);
-            offset = blueLLAngleOffset;
-        }
-        double deltaX = robot.position.x - target.position.x;
+
+            double deltaX = robot.position.x - target.position.x;
         double deltaY = robot.position.y - target.position.y;
         double headingToTarget = Math.atan2(deltaY, deltaX) + Math.toRadians(offset);
         while (headingToTarget > Math.PI)
