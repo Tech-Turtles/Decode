@@ -11,7 +11,7 @@ public final class Constants {
             ;
     public static double highTriangleEnd = 3750;
     public static double highTriangleMid = 3750;
-    public static double highTriangleClose = 3600;
+    public static double highTriangleClose = 3618;
     public static double gateOpen = 0.68;
     public static double gateClosed = 1;
     public static double gateOpenDurationSeconds = 0.3-0.025;
@@ -35,5 +35,6 @@ public final class Constants {
     public static double maxRotationalVel = 2*Math.PI;
     public static double targetX = 70;
     public static double targetY = 70;
+    public static double autoOffset= 0;
 
 }

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.moveForwardFinalX;
 import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.moveForwardX;
 import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.startX;
 import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.startY;
@@ -84,19 +85,17 @@ public class Manual extends RobotHardware {
         shooterPID.setPID(shooterP, shooterI, shooterD);
         shooterPID.setTolerance(tolerance);
         limelight.start();
+        drive.localizer.setPose(robotPose);
 
         //Automatic alliance detection
         if (alliance == Constants.Alliance.RED) {
-            driver1.setLedColor(255,1, 0, -1);
+            driver1.setLedColor(255,1, 1, -1);
             llAngleSetpoint = redLLAngleOffset;
             fieldDriveOffsetDeg = -90;
-            drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX);
         } else if (alliance == Constants.Alliance.BLUE) {
-            alliance = Constants.Alliance.BLUE;
             driver1.setLedColor(0, 20, 255, -1);
             llAngleSetpoint = blueLLAngleOffset;
-            fieldDriveOffsetDeg = -90+180;
-            drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(180))).lineToX(moveForwardX + 20);
+            fieldDriveOffsetDeg = 90;
         }
     }
 
@@ -137,12 +136,12 @@ public class Manual extends RobotHardware {
             alliance = Constants.Alliance.RED;
             driver1.setLedColor(255,1, 0, -1);
             llAngleSetpoint = redLLAngleOffset;
-            fieldDriveOffsetDeg = 90;
+            fieldDriveOffsetDeg = -90;
         } else if (driver1.dpadUpOnce() && alliance == Constants.Alliance.RED) {
             alliance = Constants.Alliance.BLUE;
             driver1.setLedColor(0, 20, 255, -1);
             llAngleSetpoint = blueLLAngleOffset;
-            fieldDriveOffsetDeg = -90;
+            fieldDriveOffsetDeg = 90;
         }
 
 
@@ -157,7 +156,7 @@ public class Manual extends RobotHardware {
 
         if (driver1.crossOnce()) {
             if (alliance == Constants.Alliance.BLUE)
-                drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), -(-72 + robotHalfLength), Math.toRadians(-90)));
+                drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), -(-72 + robotHalfLength), Math.toRadians(90)));
             else if (alliance == Constants.Alliance.RED)
                 drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), (-72 + robotHalfLength), Math.toRadians(90+180)));
         }
@@ -302,5 +301,12 @@ public class Manual extends RobotHardware {
         telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
                 status.getTemp(), status.getCpu(),(int)status.getFps());
         displayData("Alliance", alliance);
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+
+        robotPose = drive.localizer.getPose();
     }
 }

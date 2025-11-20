@@ -27,6 +27,7 @@ import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 public class RobotHardware extends OpMode {
 
     public static Constants.Alliance alliance = RED;
+    public static Pose2d robotPose = new Pose2d(0,0,0);
     // Shooter motors
     protected DcMotorEx shooterTop, shooterBottom;
     // Intake motor

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
+import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kicked;
@@ -15,8 +16,11 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -56,53 +60,63 @@ public class OdoAuto extends RobotHardware {
     public static double gateOpenDurationSeconds = 0.3;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private final ElapsedTimer gateTimer = new ElapsedTimer();
-    public static double startX = -72 + robotHalfLength;
-    public static double startY = 0 - robotHalfWidth - (24 - robotHalfWidth);
-    public static double moveForwardX = startX + 4;
+    public static double startX = 72 - robotHalfLength;
+    public static double startY = (24 - robotHalfWidth);
+    public static double moveForwardX = startX - 4;
+    public static double moveForwardFinalX = moveForwardX - 20;
     public static double testAutoLowTriangle = 4250;
 
     @Override
     public void init() {
         super.init();
         gate.setPosition(gateClosed);
-        Pose2d moveForwardEnd = null;
-        TrajectoryActionBuilder moveForwardFinal = null;
-        TrajectoryActionBuilder moveForward = null;
+        Pose2d moveForwardEnd;
+        TrajectoryActionBuilder moveForwardFinal;
+        TrajectoryActionBuilder moveForward;
+        double targetAngle = 180;
+
+
 
         if (alliance == Constants.Alliance.RED){
-            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(180)));
+            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(0)));
 
-            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(180));
-
-            moveForwardFinal =
-                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX + 20);
-
-            moveForward =
-                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX);
-
-        } if (alliance == Constants.Alliance.BLUE) {
-            drive.localizer.setPose(new Pose2d(startX, -startY, Math.toRadians(180)));
-
-            moveForwardEnd = new Pose2d(moveForwardX, -startY, Math.toRadians(180));
+            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(0));
+            targetAngle = OdoAim(moveForwardEnd);
 
             moveForwardFinal =
-                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(180))).lineToX(moveForwardX + 20);
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardFinalX);
 
             moveForward =
-                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(180))).lineToX(moveForwardX);
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardX);
 
-        }  if (alliance == Constants.Alliance.TEST) {
+
+
+        } else if (alliance == Constants.Alliance.BLUE) {
+            drive.localizer.setPose(new Pose2d(startX, -startY, Math.toRadians(0)));
+
+            moveForwardEnd = new Pose2d(moveForwardX, -startY, Math.toRadians(0));
+            targetAngle = OdoAim(moveForwardEnd);
+
+            moveForwardFinal =
+                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(0))).lineToX(moveForwardFinalX);
+
+            moveForward =
+                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(0))).lineToX(moveForwardX);
+
+        // Test mode
+        }  else {
             testAutoLowTriangle = lowTriangle - 75;
 
-            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(180)));
+            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(0)));
 
-            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(180));
+            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(0));
+            targetAngle = OdoAim(moveForwardEnd);
 
             moveForwardFinal =
-                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX + 20);
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardX + 20);
 
             moveForward =
-                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(180))).lineToX(moveForwardX);
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardX);
         }
 
 
@@ -135,7 +149,7 @@ public class OdoAuto extends RobotHardware {
 
         autonomous = new SequentialAction(
                 moveForward.build(),
-                drive.actionBuilder(moveForwardEnd).turnTo(OdoAim()).build(),
+                drive.actionBuilder(moveForwardEnd).turnTo(targetAngle+autoOffset).build(),
                 new InstantAction(() -> //does on start, Shoot 3 balls
                 {
                     if (alliance == Constants.Alliance.TEST)
@@ -268,32 +282,41 @@ public class OdoAuto extends RobotHardware {
         }
     }
 
+    @Override
+    public void stop() {
+        super.stop();
 
-    public double OdoAim() {
-        Pose2d robot = drive.localizer.getPose();
-        Pose2d target = null;
-        double offset = 0;
-        
+        robotPose = drive.localizer.getPose();
+    }
+    public double OdoAim(Pose2d robot) {
+        Pose2d target = new Pose2d(0,0,0);
+
         if (alliance == Constants.Alliance.RED)  {
-            target = new Pose2d((targetX), -targetY, 0);
-            offset = -4;
-        } if (alliance == Constants.Alliance.BLUE)  {
-            target = new Pose2d((targetX), (targetY), 0);
-            offset = 2;
-        } if (alliance == Constants.Alliance.TEST)  {
-            target = new Pose2d((targetX), targetY, 0);
-            offset = -4;
+            target = new Pose2d((-targetX), targetY, 0);
+        } else if (alliance == Constants.Alliance.BLUE)  {
+            target = new Pose2d((-targetX), (-targetY), 0);
+        } else if (alliance == Constants.Alliance.TEST)  {
+            target = new Pose2d((-targetX), targetY, 0);
         }
 
-            double deltaX = robot.position.x - target.position.x;
+        double deltaX = robot.position.x - target.position.x;
         double deltaY = robot.position.y - target.position.y;
-        double headingToTarget = Math.atan2(deltaY, deltaX) + Math.toRadians(offset);
+        double headingToTarget = Math.atan2(deltaY, deltaX) + Math.toRadians(Constants.autoOffset);
         while (headingToTarget > Math.PI)
             headingToTarget -= Math.PI;
         while (headingToTarget < -Math.PI)
             headingToTarget += Math.PI;
 
         return headingToTarget;
+    }
+
+    class OdometryTurn implements Action
+    {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            return false;
+        }
     }
 }
 
