@@ -16,7 +16,7 @@ import java.util.Objects;
 @Config
 public final class PinpointLocalizer implements Localizer {
     public static class Params {
-        public double parYTicks =  1182.80625; // y position of the parallel encoder (in tick units)
+        public double parYTicks =  10 * MecanumDrive.PARAMS.inPerTick;// 1182.80625; // y position of the parallel encoder (in tick units)
         public double perpXTicks = -3374.9405; // x position of the perpendicular encoder (in tick units)
     }
 
@@ -27,8 +27,6 @@ public final class PinpointLocalizer implements Localizer {
 
     private Pose2d txWorldPinpoint;
     private Pose2d txPinpointRobot = new Pose2d(0, 0, 0);
-
-    public static Vector2d BADWAYTOGETVELO = new Vector2d(0,0);
 
     public PinpointLocalizer(HardwareMap hardwareMap, double inPerTick, Pose2d initialPose) {
         driver = hardwareMap.get(GoBildaPinpointDriver.class, "Odo");
@@ -65,8 +63,6 @@ public final class PinpointLocalizer implements Localizer {
             txPinpointRobot = new Pose2d(driver.getPosX(DistanceUnit.INCH), driver.getPosY(DistanceUnit.INCH), driver.getHeading(UnnormalizedAngleUnit.RADIANS));
             Vector2d worldVelocity = new Vector2d(driver.getVelX(DistanceUnit.INCH), driver.getVelY(DistanceUnit.INCH));
             Vector2d robotVelocity = Rotation2d.fromDouble(-txPinpointRobot.heading.log()).times(worldVelocity);
-
-            PinpointLocalizer.BADWAYTOGETVELO = worldVelocity;
 
             return new PoseVelocity2d(robotVelocity, driver.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS));
         }
