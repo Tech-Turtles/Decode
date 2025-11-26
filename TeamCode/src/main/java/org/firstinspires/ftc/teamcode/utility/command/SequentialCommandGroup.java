@@ -1,48 +1,97 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package org.firstinspires.ftc.teamcode.utility.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class SequentialCommandGroup extends CommandGroupBase {
+/**
+ * A command composition that runs a list of commands in sequence.
+ *
+ * <p>The rules for command compositions apply: command instances that are passed to it cannot be
+ * added to any other composition or scheduled individually, and the composition requires all
+ * subsystems its components require.
+ *
+ * <p>This class is provided by the NewCommands VendorDep
+ */
+public class SequentialCommandGroup extends Command {
+  private final List<Command> m_commands = new ArrayList<>();
+  private int m_currentCommandIndex = -1;
+  private boolean m_runWhenDisabled = true;
 
-    private int index = 0;
+  /**
+   * Creates a new SequentialCommandGroup. The given commands will be run sequentially, with the
+   * composition finishing when the last command finishes.
+   *
+   * @param commands the commands to include in this composition.
+   */
+  @SuppressWarnings("this-escape")
+  public SequentialCommandGroup(Command... commands) {
+    addCommands(commands);
+  }
 
-    public SequentialCommandGroup(Command... commands) {
-        super(List.of(commands));
+  /**
+   * Adds the given commands to the group.
+   *
+   * @param commands Commands to add, in order of execution.
+   */
+  @SuppressWarnings("PMD.UseArraysAsList")
+  public final void addCommands(Command... commands) {
+    if (m_currentCommandIndex != -1) {
+      throw new IllegalStateException(
+          "Commands cannot be added to a composition while it's running");
     }
 
-    @Override
-    public void initialize() {
-        if (!commands.isEmpty()) {
-            commands.get(0).initialize();
-        }
+    CommandScheduler.getInstance().registerComposedCommands(commands);
+
+    for (Command command : commands) {
+      m_commands.add(command);
+      addRequirements(command.getRequirements());
+    }
+  }
+
+  @Override
+  public final void initialize() {
+    m_currentCommandIndex = 0;
+
+    if (!m_commands.isEmpty()) {
+      m_commands.get(0).initialize();
+    }
+  }
+
+  @Override
+  public final void execute() {
+    if (m_commands.isEmpty()) {
+      return;
     }
 
-    @Override
-    public void execute() {
-        if (index >= commands.size()) return;
+    Command currentCommand = m_commands.get(m_currentCommandIndex);
 
-        Command current = commands.get(index);
-        current.execute();
-
-        if (current.isFinished()) {
-            current.end(false);
-            index++;
-
-            if (index < commands.size()) {
-                commands.get(index).initialize();
-            }
-        }
+    currentCommand.execute();
+    if (currentCommand.isFinished()) {
+      currentCommand.end(false);
+      m_currentCommandIndex++;
+      if (m_currentCommandIndex < m_commands.size()) {
+        m_commands.get(m_currentCommandIndex).initialize();
+      }
     }
+  }
 
-    @Override
-    public void end(boolean interrupted) {
-        if (interrupted && index < commands.size()) {
-            commands.get(index).end(true);
-        }
+  @Override
+  public final void end(boolean interrupted) {
+    if (interrupted
+        && !m_commands.isEmpty()
+        && m_currentCommandIndex > -1
+        && m_currentCommandIndex < m_commands.size()) {
+      m_commands.get(m_currentCommandIndex).end(true);
     }
+    m_currentCommandIndex = -1;
+  }
 
-    @Override
-    public boolean isFinished() {
-        return index >= commands.size();
-    }
+  @Override
+  public final boolean isFinished() {
+    return m_currentCommandIndex == m_commands.size();
+  }
 }

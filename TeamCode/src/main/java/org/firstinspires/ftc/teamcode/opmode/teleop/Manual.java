@@ -1,9 +1,16 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.core.RobotHardware;
 import org.firstinspires.ftc.teamcode.subsystem.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.utility.command.Command;
 
+@TeleOp
+@Config
 public class Manual extends RobotHardware {
 
     DriveSubsystem drive;
@@ -15,6 +22,8 @@ public class Manual extends RobotHardware {
         drive = new DriveSubsystem(batteryVoltageSensor, localizer);
 
         scheduler.registerSubsystem(drive);
+
+        drive.setDefaultCommand(new FieldCentricDriveCommand(drive));
     }
 
     @Override
@@ -32,26 +41,22 @@ public class Manual extends RobotHardware {
         super.loop();
     }
 
-    public class FieldCentricDriveCommand implements Command {
+    public class FieldCentricDriveCommand extends Command {
         private final DriveSubsystem drive;
 
         public FieldCentricDriveCommand(DriveSubsystem drive) {
             this.drive = drive;
-            addRe(drive);
+            addRequirements(drive);
         }
 
         @Override
         public void execute() {
-            double x = gamepad1.left_stick_x;
-            double y = gamepad1.left_stick_y;
-            double rot = gamepad1.right_stick_x;
-
-            drive.setDrivePowersField(x, y, rot, 0);
+            drive.setDrivePowersField(primary.left_stick_y, primary.left_stick_x, primary.right_stick_x, 0.0);
         }
 
         @Override
         public void end(boolean interrupted) {
-            drive.stop();
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0,0), 0));
         }
     }
 }

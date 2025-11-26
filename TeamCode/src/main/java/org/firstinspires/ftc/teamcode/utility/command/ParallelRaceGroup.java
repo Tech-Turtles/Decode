@@ -1,45 +1,91 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package org.firstinspires.ftc.teamcode.utility.command;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-public class ParallelRaceGroup extends CommandGroupBase {
+/**
+ * A composition that runs a set of commands in parallel, ending when any one of the commands ends
+ * and interrupting all the others.
+ *
+ * <p>The rules for command compositions apply: command instances that are passed to it cannot be
+ * added to any other composition or scheduled individually, and the composition requires all
+ * subsystems its components require.
+ *
+ * <p>This class is provided by the NewCommands VendorDep
+ */
+public class ParallelRaceGroup extends Command {
+  // LinkedHashSet guarantees we iterate over commands in the order they were added
+  private final Set<Command> m_commands = new LinkedHashSet<>();
+  private boolean m_runWhenDisabled = true;
+  private boolean m_finished = true;
 
-    private final Set<Command> runningCommands = new HashSet<>();
-    private boolean done = false;
+  /**
+   * Creates a new ParallelCommandRace. The given commands will be executed simultaneously, and will
+   * "race to the finish" - the first command to finish ends the entire command, with all other
+   * commands being interrupted.
+   *
+   * @param commands the commands to include in this composition.
+   */
+  @SuppressWarnings("this-escape")
+  public ParallelRaceGroup(Command... commands) {
+    addCommands(commands);
+  }
 
-    public ParallelRaceGroup(Command... commands) {
-        super(List.of(commands));
+  /**
+   * Adds the given commands to the group.
+   *
+   * @param commands Commands to add to the group.
+   */
+  public final void addCommands(Command... commands) {
+    if (!m_finished) {
+      throw new IllegalStateException(
+          "Commands cannot be added to a composition while it's running!");
     }
 
-    @Override
-    public void initialize() {
-        runningCommands.addAll(commands);
-        commands.forEach(Command::initialize);
-    }
+    CommandScheduler.getInstance().registerComposedCommands(commands);
 
-    @Override
-    public void execute() {
-        for (Command cmd : new HashSet<>(runningCommands)) {
-            cmd.execute();
-            if (cmd.isFinished()) {
-                cmd.end(false);
-                done = true;
-                runningCommands.remove(cmd);
-                break;
-            }
-        }
-
-        if (done) {
-            // Interrupt all others
-            for (Command remaining : runningCommands) {
-                remaining.end(true);
-            }
-            runningCommands.clear();
-        }
+    for (Command command : commands) {
+      if (!Collections.disjoint(command.getRequirements(), getRequirements())) {
+        throw new IllegalArgumentException(
+            "Multiple commands in a parallel composition cannot require the same subsystems");
+      }
+      m_commands.add(command);
+      addRequirements(command.getRequirements());
     }
+  }
 
-    @Override
-    public boolean isFinished() {
-        return done;
+  @Override
+  public final void initialize() {
+    m_finished = false;
+    for (Command command : m_commands) {
+      command.initialize();
     }
+  }
+
+  @Override
+  public final void execute() {
+    for (Command command : m_commands) {
+      command.execute();
+      if (command.isFinished()) {
+        m_finished = true;
+      }
+    }
+  }
+
+  @Override
+  public final void end(boolean interrupted) {
+    for (Command command : m_commands) {
+      command.end(!command.isFinished());
+    }
+  }
+
+  @Override
+  public final boolean isFinished() {
+    return m_finished;
+  }
 }

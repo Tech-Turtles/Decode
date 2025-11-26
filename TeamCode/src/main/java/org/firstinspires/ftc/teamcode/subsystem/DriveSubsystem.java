@@ -31,7 +31,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.core.RobotConfiguration;
 import org.firstinspires.ftc.teamcode.hardware.Motor;
-import org.firstinspires.ftc.teamcode.utility.command.Subsystem;
+import org.firstinspires.ftc.teamcode.utility.command.SubsystemBase;
 import org.firstinspires.ftc.teamcode.utility.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.utility.roadrunner.Localizer;
 
@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DriveSubsystem extends Subsystem {
+public class DriveSubsystem extends SubsystemBase {
     public static class Params {
         // drive model parameters
         public double inPerTick = 1;
@@ -114,6 +114,10 @@ public class DriveSubsystem extends Subsystem {
 
     public void setPose(Pose2d pose) {
         localizer.setPose(pose);
+    }
+
+    public Pose2d getPose() {
+        return localizer.getPose();
     }
 
     public PoseVelocity2d updatePoseEstimate() {

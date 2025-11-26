@@ -15,8 +15,6 @@ import org.firstinspires.ftc.teamcode.hardware.meta.HardwareDevice;
 import org.firstinspires.ftc.teamcode.hardware.meta.HardwareStatus;
 import org.firstinspires.ftc.teamcode.utility.command.CommandScheduler;
 import org.firstinspires.ftc.teamcode.utility.math.ElapsedTimer;
-import org.firstinspires.ftc.teamcode.utility.math.geometry.Rotation2d;
-import org.firstinspires.ftc.teamcode.utility.roadrunner.Localizer;
 import org.firstinspires.ftc.teamcode.utility.roadrunner.OTOSLocalizer;
 
 /**
