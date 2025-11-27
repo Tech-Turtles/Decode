@@ -25,7 +25,7 @@ public final class Constants {
     public static double superSlowMode = 0.25;
     public static double slowModeSpeed = 0.5;
     public static double llAngleSetpoint = 0;
-    public static double robotHalfWidth = (17.5)/2.0;
+    public static double robotHalfWidth = (16.625)/2.0;
     public static double robotHalfLength = (18)/2.0;
     public static double kicking = 1;
     public static double kicked = 0;

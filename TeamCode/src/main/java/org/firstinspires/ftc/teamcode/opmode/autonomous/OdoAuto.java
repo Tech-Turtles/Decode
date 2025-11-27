@@ -227,6 +227,29 @@ public class OdoAuto extends RobotHardware {
                         }),
                         new SleepAction(1)
                 ),
+                new SequentialAction(
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateOpen);
+                        }),
+                        new SleepAction(gateOpenDurationSeconds),
+                        new InstantAction(() ->
+                        {
+                            gate.setPosition(gateClosed);
+                        }),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicked);
+                            kickerRight.setPosition(kicked);
+                        }),
+                        new SleepAction(flipperAdd),
+                        new InstantAction(() ->
+                        {
+                            kickerLeft.setPosition(kicking);
+                            kickerRight.setPosition(kicking);
+                        }),
+                        new SleepAction(1)
+                ),
                 new InstantAction(() ->
                 {
                     shooterSetPoint = 0;
@@ -285,7 +308,6 @@ public class OdoAuto extends RobotHardware {
     @Override
     public void stop() {
         super.stop();
-
         robotPose = drive.localizer.getPose();
     }
     public double OdoAim(Pose2d robot) {
