@@ -63,8 +63,8 @@ public class OdoAuto extends RobotHardware {
     public static double startX = 72 - robotHalfLength;
     public static double startY = (24 - robotHalfWidth);
     public static double moveForwardX = startX - 4;
-    public static double moveForwardFinalX = moveForwardX - 20;
-    public static double testAutoLowTriangle = 4250;
+    public static double moveForwardFinalX = moveForwardX - 27;
+    public static double testAutoLowTriangle = 4200;
 
     @Override
     public void init() {
@@ -250,6 +250,29 @@ public class OdoAuto extends RobotHardware {
                         }),
                         new SleepAction(1)
                 ),
+        new SequentialAction(
+                new InstantAction(() ->
+                {
+                    gate.setPosition(gateOpen);
+                }),
+                new SleepAction(gateOpenDurationSeconds),
+                new InstantAction(() ->
+                {
+                    gate.setPosition(gateClosed);
+                }),
+                new InstantAction(() ->
+                {
+                    kickerLeft.setPosition(kicked);
+                    kickerRight.setPosition(kicked);
+                }),
+                new SleepAction(flipperAdd),
+                new InstantAction(() ->
+                {
+                    kickerLeft.setPosition(kicking);
+                    kickerRight.setPosition(kicking);
+                }),
+                new SleepAction(1)
+        ),
                 new InstantAction(() ->
                 {
                     shooterSetPoint = 0;
@@ -314,11 +337,11 @@ public class OdoAuto extends RobotHardware {
         Pose2d target = new Pose2d(0,0,0);
 
         if (alliance == Constants.Alliance.RED)  {
-            target = new Pose2d((-targetX), targetY, 0);
+            target = new Pose2d((-targetX), targetY+4, 0);
         } else if (alliance == Constants.Alliance.BLUE)  {
-            target = new Pose2d((-targetX), (-targetY), 0);
+            target = new Pose2d((-targetX), -(targetY+2.5), 0);
         } else if (alliance == Constants.Alliance.TEST)  {
-            target = new Pose2d((-targetX), targetY, 0);
+            target = new Pose2d((-targetX), targetY+4, 0);
         }
 
         double deltaX = robot.position.x - target.position.x;

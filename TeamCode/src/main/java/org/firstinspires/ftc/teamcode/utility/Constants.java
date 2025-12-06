@@ -7,8 +7,7 @@ public final class Constants {
     public enum Alliance{
         RED, BLUE, TEST
     }
-    public static double lowTriangle = 4300
-            ;
+    public static double lowTriangle = 4300;
     public static double highTriangleEnd = 3670;
     public static double highTriangleMid = 3460;
     public static double highTriangleClose = 3240;
@@ -36,5 +35,4 @@ public final class Constants {
     public static double targetX = 68;
     public static double targetY = 62;
     public static double autoOffset= 0;
-
 }
