@@ -256,9 +256,14 @@ public class Manual extends RobotHardware {
             setpoint = 0;
         }
 
-        if (driver2.rightBumper()){
+        if (driver2.dpadUp()){
             gate.setPosition(gateOpen);
-        } else if (driver2.leftBumperOnce()) {
+        } else if (driver2.leftBumperOnce() && shooterRPM >= (setpoint - 200)) {
+            gateTimerActive = true;
+            gateTimer.reset();
+            gate.setPosition(gateOpen);
+            shotRPMList.add( (int) shooterRPM);
+        } else if (driver2.rightBumperOnce()) {
             gateTimerActive = true;
             gateTimer.reset();
             gate.setPosition(gateOpen);
