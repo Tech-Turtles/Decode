@@ -7,6 +7,8 @@ public final class Constants {
     public enum Alliance{
         RED, BLUE, TEST
     }
+    public static boolean autoWait = false;
+    public static double autoWaitTime = 11.5;
     public static double lowTriangle = 4300;
     public static double highTriangleEnd = 3670;
     public static double highTriangleMid = 3460;
@@ -34,5 +36,9 @@ public final class Constants {
     public static double maxRotationalVel = 2*Math.PI;
     public static double targetX = 68;
     public static double targetY = 62;
+    public static double blueTargetX = 68;
+    public static double blueTargetY = 58;
+    public static double redTargetX = 68;
+    public static double redTargetY = 62;
     public static double autoOffset= 0;
 }

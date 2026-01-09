@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.moveForwa
 import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.startX;
 import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.startY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetX;
+import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
 import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
 import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpen;
@@ -23,6 +25,8 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
 import static org.firstinspires.ftc.teamcode.utility.Constants.maxRotationalVel;
 import static org.firstinspires.ftc.teamcode.utility.Constants.redLLAngleOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.redTargetX;
+import static org.firstinspires.ftc.teamcode.utility.Constants.redTargetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
 import static org.firstinspires.ftc.teamcode.utility.Constants.rotationKs;
@@ -167,12 +171,12 @@ public class Manual extends RobotHardware {
 
         if (alliance == Constants.Alliance.RED)
         {
-            target = new Pose2d(-(targetX), targetY, 0);
+            target = new Pose2d(-(redTargetX), redTargetY, 0);
             offset = redLLAngleOffset;
         }
         else
         {
-            target = new Pose2d(-(targetX), -(targetY), 0);
+            target = new Pose2d(-(blueTargetX), -(blueTargetY), 0);
             offset = blueLLAngleOffset;
         }
         

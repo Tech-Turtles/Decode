@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.autoWait;
+import static org.firstinspires.ftc.teamcode.utility.Constants.autoWaitTime;
 import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleClose;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kicked;
@@ -9,9 +11,6 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.kicking;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
-import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
-import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
-import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
 
@@ -28,7 +27,6 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
 
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.utility.Constants;
@@ -66,6 +64,7 @@ public class OdoAutoBigTriangle extends RobotHardware {
     public static double scoreY = 15.299;
     public static double sweapX = -30;
     public static double sweapY = 48;
+    public static double startWaitTime = 0.0;
 
 
 
@@ -79,7 +78,8 @@ public class OdoAutoBigTriangle extends RobotHardware {
         TrajectoryActionBuilder move2Sweap;
         double targetAngle = 180;
 
-
+        if (autoWait)
+                startWaitTime = autoWaitTime;
 
         if (alliance == Constants.Alliance.RED){
             drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(startH)));
@@ -157,6 +157,7 @@ public class OdoAutoBigTriangle extends RobotHardware {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         autonomous = new SequentialAction(
+                new SleepAction(startWaitTime),
                 move2Score.build(),
                 drive.actionBuilder(scorePose).turnTo(targetAngle+autoOffset).build(),
                 new InstantAction(() -> //does on start, Shoot 3 balls

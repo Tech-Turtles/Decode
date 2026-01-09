@@ -15,6 +15,8 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
+import static org.firstinspires.ftc.teamcode.utility.Constants.autoWait;
+import static org.firstinspires.ftc.teamcode.utility.Constants.autoWaitTime;
 
 import androidx.annotation.NonNull;
 
@@ -65,6 +67,7 @@ public class OdoAuto extends RobotHardware {
     public static double moveForwardX = startX - 4;
     public static double moveForwardFinalX = moveForwardX - 27;
     public static double testAutoLowTriangle = 4200;
+    public static double startWaitTime = 0.0;
 
     @Override
     public void init() {
@@ -75,6 +78,8 @@ public class OdoAuto extends RobotHardware {
         TrajectoryActionBuilder moveForward;
         double targetAngle = 180;
 
+        if (autoWait)
+            startWaitTime = autoWaitTime;
 
 
         if (alliance == Constants.Alliance.RED){
@@ -148,6 +153,7 @@ public class OdoAuto extends RobotHardware {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         autonomous = new SequentialAction(
+                new SleepAction(startWaitTime),
                 moveForward.build(),
                 drive.actionBuilder(moveForwardEnd).turnTo(targetAngle+autoOffset).build(),
                 new InstantAction(() -> //does on start, Shoot 3 balls
