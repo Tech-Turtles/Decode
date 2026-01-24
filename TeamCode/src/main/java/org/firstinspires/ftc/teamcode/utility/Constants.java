@@ -13,9 +13,9 @@ public final class Constants {
     public static double highTriangleEnd = 3670;
     public static double highTriangleMid = 3460;
     public static double highTriangleClose = 3240;
-    public static double gateOpen = 0.68;
+    public static double gateOpen = 0.4;
     public static double gateClosed = 1;
-    public static double gateOpenDurationSeconds = 0.3-0.025;
+    public static double gateOpenDurationSeconds = 0.35;
     public static double redLLAngleOffset = -0.5;
     public static double blueLLAngleOffset = 0;
     public static double llP = 0.8 , llI = 0.001, llD = 0.1;
@@ -30,7 +30,7 @@ public final class Constants {
     public static double robotHalfLength = (18)/2.0;
     public static double kicking = 1;
     public static double kicked = 0;
-    public static double flipperAdd = 0.4;
+    public static double flipperAdd = 0.5;
     public static double rotationKs = 0.09;
     public static double rotationKv = 0.08;
     public static double maxRotationalVel = 2*Math.PI;
@@ -41,4 +41,5 @@ public final class Constants {
     public static double redTargetX = 68;
     public static double redTargetY = 62;
     public static double autoOffset= 0;
+    public static double shooterBoostRPM = 75;
 }

@@ -31,6 +31,7 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
 import static org.firstinspires.ftc.teamcode.utility.Constants.rotationKs;
 import static org.firstinspires.ftc.teamcode.utility.Constants.rotationKv;
+import static org.firstinspires.ftc.teamcode.utility.Constants.shooterBoostRPM;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterP;
@@ -70,6 +71,7 @@ public class Manual extends RobotHardware {
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private double fieldDriveOffsetDeg = -90;
     public static boolean robotCentric = false;
+    public static double boost;
 
     @Override
     public void init() {
@@ -247,18 +249,25 @@ public class Manual extends RobotHardware {
         double intakeB = driver1.right_trigger;
         intake.setPower(intakeF - intakeB);
 
+        if (driver2.dpadDown())
+            boost = shooterBoostRPM;
+        else
+            boost = 0;
+
         // Driver 2 shooter controls
         if (driver2.triangle()) {
-            setpoint = lowTriangle;
+            setpoint = lowTriangle + boost;
         } else if (driver2.square()) {
-            setpoint = highTriangleEnd;
+            setpoint = highTriangleEnd + boost;
         } else if (driver2.cross()) {
-            setpoint = highTriangleMid;
+            setpoint = highTriangleMid + boost;
         } else if (driver2.circle()) {
-            setpoint = highTriangleClose;
+            setpoint = highTriangleClose + boost;
         } else {
             setpoint = 0;
         }
+
+
 
         if (driver2.dpadUp()){
             gate.setPosition(gateOpen);

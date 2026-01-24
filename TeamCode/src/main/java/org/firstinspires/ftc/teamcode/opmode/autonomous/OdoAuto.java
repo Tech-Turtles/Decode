@@ -4,6 +4,9 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpen;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpenDurationSeconds;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kicked;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kicking;
 import static org.firstinspires.ftc.teamcode.utility.Constants.redLLAngleOffset;
@@ -54,12 +57,6 @@ public class OdoAuto extends RobotHardware {
     // Set point is RPM
     private final double tolerance = 20;
     public static double kStatic = 0.06;
-
-    public static double gateOpen = 0.68;
-
-    public static double gateClosed = 1;
-
-    public static double gateOpenDurationSeconds = 0.3;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private final ElapsedTimer gateTimer = new ElapsedTimer();
     public static double startX = 72 - robotHalfLength;
@@ -79,7 +76,7 @@ public class OdoAuto extends RobotHardware {
         double targetAngle = 180;
 
         if (autoWait)
-            startWaitTime = autoWaitTime;
+            startWaitTime = autoWaitTime + 3.5;
 
 
         if (alliance == Constants.Alliance.RED){

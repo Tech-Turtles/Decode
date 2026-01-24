@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
+import static org.firstinspires.ftc.teamcode.opmode.autonomous.SmallTriangleAuto.gateOpenDurationSeconds;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoWait;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoWaitTime;
 import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpen;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleClose;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kicked;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kicking;
@@ -13,6 +15,7 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
+import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
 
 import androidx.annotation.NonNull;
 
@@ -49,12 +52,6 @@ public class OdoAutoBigTriangle extends RobotHardware {
     // Set point is RPM
     private final double tolerance = 20;
     public static double kStatic = 0.06;
-
-    public static double gateOpen = 0.68;
-
-    public static double gateClosed = 1;
-
-    public static double gateOpenDurationSeconds = 0.3;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private final ElapsedTimer gateTimer = new ElapsedTimer();
     public static double startX = -50.882;
