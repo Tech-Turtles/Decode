@@ -11,6 +11,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -31,9 +32,11 @@ public class RobotHardware extends OpMode {
     // Shooter motors
     protected DcMotorEx shooterTop, shooterBottom;
     // Intake motor
-    protected DcMotorEx intake;
+    //protected DcMotorEx intake;
+   // protected DcMotorEx test1;
+   // protected DcMotorEx test2;
     protected ServoImplEx gate;
-    protected Limelight3A limelight;
+//    protected Limelight3A limelight;
     protected MecanumDrive drive;
     protected Controller driver1, driver2;
     protected final FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -42,6 +45,9 @@ public class RobotHardware extends OpMode {
 
     protected ServoImplEx kickerLeft, kickerRight;
 
+    protected CRServo Transfer1;
+    protected CRServo Transfer2;
+
     /**
      * Initializes all hardware components and their configurations.
      * Sets up motor directions, modes, and zero power behaviors.
@@ -49,18 +55,21 @@ public class RobotHardware extends OpMode {
      */
     @Override
     public void init() {
-        intake = hardwareMap.get(DcMotorEx.class, "Intake");
 
-        gate = hardwareMap.get(ServoImplEx.class,"Gate");
+//        gate = hardwareMap.get(ServoImplEx.class,"Gate");
 
         shooterTop = hardwareMap.get(DcMotorEx.class, "ShooterTop");
         shooterBottom = hardwareMap.get(DcMotorEx.class, "ShooterBottom");
 
-        kickerLeft = hardwareMap.get(ServoImplEx.class, "KickerLeft");
-        kickerRight = hardwareMap.get(ServoImplEx.class, "KickerRight");
+//        kickerLeft = hardwareMap.get(ServoImplEx.class, "KickerLeft");
+//        kickerRight = hardwareMap.get(ServoImplEx.class, "KickerRight");
+
+        Transfer1 = hardwareMap.get(CRServo.class,"Transfer1");
+        Transfer2 = hardwareMap.get(CRServo.class,"Transfer2");
 
         shooterTop.setDirection(DcMotorSimple.Direction.REVERSE);
-        kickerRight.setDirection(Servo.Direction.REVERSE);
+ //       kickerRight.setDirection(Servo.Direction.REVERSE);
+          Transfer2.setDirection(CRServo.Direction.REVERSE);
 
         shooterTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooterBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -68,11 +77,14 @@ public class RobotHardware extends OpMode {
         shooterTop.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterBottom.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        limelight = hardwareMap.get(Limelight3A.class, "Limelight");
+        //test1 = hardwareMap.get(DcMotorEx.class,"Test1");
+       // test2 = hardwareMap.get(DcMotorEx.class,"Test2");
+
+//        limelight = hardwareMap.get(Limelight3A.class, "Limelight");
 
         telemetry.setMsTransmissionInterval(11);
 
-        limelight.pipelineSwitch(0);
+//        limelight.pipelineSwitch(0);
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
         timer = new ElapsedTimer();

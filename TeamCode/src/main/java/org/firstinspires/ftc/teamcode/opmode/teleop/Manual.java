@@ -8,9 +8,7 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpen;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpenDurationSeconds;
+import static org.firstinspires.ftc.teamcode.utility.Constants.flipperDelay;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleClose;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleEnd;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleMid;
@@ -40,6 +38,8 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.superSlowMode;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.tolerance;
+import static org.firstinspires.ftc.teamcode.utility.Constants.motorPower;
+import static org.firstinspires.ftc.teamcode.utility.Constants.dipAdd;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -64,14 +64,15 @@ public class Manual extends RobotHardware {
     protected PIDController shooterPID = new PIDController(shooterP, shooterI, shooterD);
     // Set point is RPM
     private double setpoint = 0;
-    private final ElapsedTimer gateTimer = new ElapsedTimer();
-    private boolean gateTimerActive;
     List<Integer> shotRPMList = new ArrayList<>();
     private double prevP, prevI, prevD;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private double fieldDriveOffsetDeg = -90;
     public static boolean robotCentric = false;
     public static double boost;
+//    private boolean buttonPressed = false;
+    public boolean autoServoOff = true;
+
 
     @Override
     public void init() {
@@ -90,7 +91,7 @@ public class Manual extends RobotHardware {
         super.start();
         shooterPID.setPID(shooterP, shooterI, shooterD);
         shooterPID.setTolerance(tolerance);
-        limelight.start();
+//        limelight.start();
         drive.localizer.setPose(robotPose);
 
         //Automatic alliance detection
@@ -109,7 +110,7 @@ public class Manual extends RobotHardware {
     public void loop() {
         super.loop();
 
-        LLStatus status = limelight.getStatus();
+//        LLStatus status = limelight.getStatus();
 
         // Calculate shooter rpm; ticks per second to rpm
         // 6000 rpm motor is 28 ticks per rotation
@@ -117,21 +118,18 @@ public class Manual extends RobotHardware {
         double power = shooterPID.calculate(shooterRPM, setpoint);
         double combined = Math.min(1, Math.max(-1, setpoint * kV + power));
 
-        if (shooterPID.atSetpoint() && setpoint != 0)
-        {
+        if (shooterPID.atSetpoint() && setpoint != 0) {
             driver2.setLedColor(0, 255, 0, -1);
-        }
-        else
-        {
+        } else {
             driver2.setLedColor(255, 0, 0, -1);
         }
 
         // If slow mode is on then update the slow speed multiplier
         double slowSpeed = 1;
         if (driver1.leftBumper()) {
-           slowSpeed = slowModeSpeed;
+            slowSpeed = slowModeSpeed;
         } else if (driver1.rightBumper()) {
-           slowSpeed = superSlowMode;
+            slowSpeed = superSlowMode;
         }
 
         double x = Math.pow(-driver1.left_stick_y, 3);
@@ -140,7 +138,7 @@ public class Manual extends RobotHardware {
 
         if (driver1.dpadUpOnce() && alliance == Constants.Alliance.BLUE) {
             alliance = Constants.Alliance.RED;
-            driver1.setLedColor(255,1, 0, -1);
+            driver1.setLedColor(255, 1, 0, -1);
             llAngleSetpoint = redLLAngleOffset;
             fieldDriveOffsetDeg = -90;
         } else if (driver1.dpadUpOnce() && alliance == Constants.Alliance.RED) {
@@ -151,8 +149,7 @@ public class Manual extends RobotHardware {
         }
 
 
-        if (prevP != llP || prevI != llI || prevD != llD )
-        {
+        if (prevP != llP || prevI != llI || prevD != llD) {
             llAnglePID.setPID(llP, llI, llD);
 
             prevP = llP;
@@ -164,24 +161,21 @@ public class Manual extends RobotHardware {
             if (alliance == Constants.Alliance.BLUE)
                 drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), -(-72 + robotHalfLength), Math.toRadians(90)));
             else if (alliance == Constants.Alliance.RED)
-                drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), (-72 + robotHalfLength), Math.toRadians(90+180)));
+                drive.localizer.setPose(new Pose2d((72 - robotHalfWidth), (-72 + robotHalfLength), Math.toRadians(90 + 180)));
         }
 
         Pose2d robot = drive.localizer.getPose();
         Pose2d target;
         double offset;
 
-        if (alliance == Constants.Alliance.RED)
-        {
+        if (alliance == Constants.Alliance.RED) {
             target = new Pose2d(-(redTargetX), redTargetY, 0);
             offset = redLLAngleOffset;
-        }
-        else
-        {
+        } else {
             target = new Pose2d(-(blueTargetX), -(blueTargetY), 0);
             offset = blueLLAngleOffset;
         }
-        
+
         packet.fieldOverlay().setStroke("#4FF1B5");
         drawTarget(packet.fieldOverlay(), target, robot);
         double deltaX = robot.position.x - target.position.x;
@@ -194,60 +188,40 @@ public class Manual extends RobotHardware {
         telemetry.addData("Target Pose", "X: %.2f Y: %.2f", target.position.x, target.position.y);
         telemetry.addData("Delta Pose", "X: %.2f Y: %.2f", deltaX, deltaY);
         displayData("Heading To Target", Math.toDegrees(headingToTarget));
+        displayData("delta X to target", deltaX);
+        displayData("delta Y to target", deltaY);
+        double distanceToTarget = Math.sqrt((Math.pow(deltaX, 2) + (Math.pow(deltaY, 2))));
+        displayData("distance to target", distanceToTarget);
 
-        if (driver1.right_trigger >= 0.5)
-        {
-            double error = headingToTarget-robot.heading.toDouble();
+        if (driver1.right_trigger >= 0.5) {
+            double error = headingToTarget - robot.heading.toDouble();
             double ff = 0;
-            double kV = rotationKv*(error * maxRotationalVel);
+            double kV = rotationKv * (error * maxRotationalVel);
             if (Math.abs(error) > 0.001)
                 ff = rotationKs * Math.signum(error) + kV;
             rx = (llAnglePID.calculate(headingToTarget, robot.heading.toDouble()) - ff);
         }
         displayData("rx", rx);
 
-//        LLResult result = limelight.getLatestResult();
-//        if (result.isValid()) {
-//            double captureLatency = result.getCaptureLatency();
-//            double targetingLatency = result.getTargetingLatency();
-//            double parseLatency = result.getParseLatency();
-//            telemetry.addData("LL Latency", captureLatency + targetingLatency);
-//            telemetry.addData("Parse Latency", parseLatency);
-//            telemetry.addData("PythonOutput", java.util.Arrays.toString(result.getPythonOutput()));
-//
-//            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-//            for (LLResultTypes.FiducialResult fr : fiducialResults) {
-//                telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(), fr.getTargetXDegrees(), fr.getTargetYDegrees());
-//
-//                if (fr.getFiducialId() == 24 || fr.getFiducialId() == 20)
-//                {
-//                    if (driver1.right_trigger >= 0.5) {
-//                        rx = -(llAnglePID.calculate(fr.getTargetXDegrees(), llAngleSetpoint));
-//                        displayData("Limelight rotation", rx);
-//                    }
-//
-//                }
-//            }
-//        }
-
         if (gamepad1.ps) {
-            drive.localizer.setPose(new Pose2d(0,0,0));
+            drive.localizer.setPose(new Pose2d(0, 0, 0));
             fieldDriveOffsetDeg = 180;
         }
-        
+
         if (driver1.triangleOnce())
             robotCentric = !robotCentric;
 
         if (robotCentric)
-            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(x*slowSpeed, -y*slowSpeed), rx*slowSpeed));
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(x * slowSpeed, -y * slowSpeed), rx * slowSpeed));
         else
-            drive.setDrivePowersField(x*slowSpeed, -y*slowSpeed, rx*slowSpeed, fieldDriveOffsetDeg);
+            drive.setDrivePowersField(x * slowSpeed, -y * slowSpeed, rx * slowSpeed, fieldDriveOffsetDeg);
 
 
         // Intake control - Forward and backwards
-        double intakeF = driver1.left_trigger;
-        double intakeB = driver1.right_trigger;
-        intake.setPower(intakeF - intakeB);
+        // double intakeF = driver1.left_trigger;
+        // double intakeB = driver1.right_trigger; n
+
+        //intake.setPower(intakeF - intakeB);
 
         if (driver2.dpadDown())
             boost = shooterBoostRPM;
@@ -268,58 +242,65 @@ public class Manual extends RobotHardware {
         }
 
 
+        if (driver2.leftBumperOnce()) {
+            Transfer1.setPower(1);
+            Transfer2.setPower(1);
+        }
 
-        if (driver2.dpadUp()){
-            gate.setPosition(gateOpen);
-        } else if (driver2.leftBumperOnce() && shooterRPM >= (setpoint - 200)) {
-            gateTimerActive = true;
-            gateTimer.reset();
-            gate.setPosition(gateOpen);
-            shotRPMList.add( (int) shooterRPM);
-        } else if (driver2.rightBumperOnce()) {
-            gateTimerActive = true;
-            gateTimer.reset();
-            gate.setPosition(gateOpen);
-            shotRPMList.add( (int) shooterRPM);
-        } else if (gateTimerActive) {
-            if (gateTimer.seconds() > gateOpenDurationSeconds)
-            {
-                gate.setPosition(gateClosed);
-                if (gateTimer.seconds() > gateOpenDurationSeconds + flipperAdd) {
-                    gateTimerActive = false;
-                    kickerLeft.setPosition(kicking);
-                    kickerRight.setPosition(kicking);
-                } else {
-                    kickerLeft.setPosition(kicked);
-                    kickerRight.setPosition(kicked);
+        if (driver2.rightBumperOnce()) {
+            Transfer1.setPower(0);
+            Transfer2.setPower(0);
+
+        }
+
+
+        if (setpoint != 0 && shooterRPM >= setpoint - dipAdd && driver2.right_trigger > 0.5) {
+                    Transfer1.setPower(1);
+                    Transfer2.setPower(1);
+                    dipAdd = 100;
+        }
+        if (setpoint != 0 && shooterRPM >= setpoint - dipAdd && driver2.left_trigger > 0.5) {
+            Transfer1.setPower(0.4);
+            Transfer2.setPower(0.4);
+            dipAdd = 100;
+        }
+            if (setpoint == 0 && autoServoOff) {
+                    dipAdd = 0;
+                    Transfer1.setPower(0);
+                    Transfer2.setPower(0);
                 }
+
+            if (driver2.dpadUpOnce()) {
+                autoServoOff = false;
             }
-        } else {
-            gate.setPosition(gateClosed);
-        }
+
+        /*if (driver2.leftBumper()){
+            test1.setPower(motorPower);
+            test2.setPower(motorPower);
+        }*/
 
 
-
-        if (setpoint != 0) {
-            shooterTop.setPower(combined + Math.signum(power) * kStatic);
-            shooterBottom.setPower(combined + Math.signum(power) * kStatic);
-        } else {
-            shooterTop.setPower(0);
-            shooterBottom.setPower(0);
-        }
-
-
+            if (setpoint != 0) {
+                shooterTop.setPower(combined + Math.signum(power) * kStatic);
+                shooterBottom.setPower(combined + Math.signum(power) * kStatic);
+            } else {
+                shooterTop.setPower(0);
+                shooterBottom.setPower(0);
+            }
 
         // Output shooter calculations to driver station & dashboard
-        displayData("Shooter RPM",shooterRPM);
+        displayData("Shooter RPM", shooterRPM);
         displayData("Setpoint RPM", setpoint);
         displayData("PID Power", power);
-        displayData("Gate Timer (sec)", gateTimer.seconds());
         displayData("Shooter RPM on everyshot", shotRPMList);
-        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
-                status.getTemp(), status.getCpu(),(int)status.getFps());
+//        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
+//                status.getTemp(), status.getCpu(),(int)status.getFps());
         displayData("Alliance", alliance);
-    }
+
+
+        }
+
+
 
     @Override
     public void stop() {
