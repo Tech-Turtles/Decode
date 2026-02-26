@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 import static org.firstinspires.ftc.teamcode.opmode.autonomous.SmallTriangleAuto.gateOpenDurationSeconds;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.autoShootTime;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoWait;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoWaitTime;
 import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
@@ -13,6 +14,7 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.kicking;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
+import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
@@ -68,7 +70,6 @@ public class OdoAutoBigTriangle extends RobotHardware {
     @Override
     public void init() {
         super.init();
-        gate.setPosition(gateClosed);
         Pose2d scorePose;
         Pose2d startPose;
         TrajectoryActionBuilder move2Score;
@@ -128,28 +129,29 @@ public class OdoAutoBigTriangle extends RobotHardware {
 
         SequentialAction shootSequence =
                 new SequentialAction(
-                new InstantAction(() ->
-                {
-                    gate.setPosition(gateOpen);
-                }),
-                new SleepAction(gateOpenDurationSeconds),
-                new InstantAction(() ->
-                {
-                    gate.setPosition(gateClosed);
-                }),
-                new InstantAction(() ->
-                {
-                    kickerLeft.setPosition(kicked);
-                    kickerRight.setPosition(kicked);
-                }),
-                new SleepAction(flipperAdd),
-                new InstantAction(() ->
-                {
-                    kickerLeft.setPosition(kicking);
-                    kickerRight.setPosition(kicking);
-                }),
-                new SleepAction(1)
-        );
+                        new SequentialAction(
+                                new InstantAction(() -> {
+                                    Transfer1.setPower(1);
+                                    Transfer2.setPower(1);
+                                }),
+                                new SleepAction(autoShootTime),
+                                new InstantAction(()->{
+                                    Transfer1.setPower(0);
+                                    Transfer2.setPower(0);
+                                })
+                        ),
+                        new InstantAction(() -> {
+                            shooterSetPoint = 0;
+                        })
+                );
+
+        SequentialAction shooterSpinUp =
+                new SequentialAction(
+                        new InstantAction(() -> {
+                            shooterSetPoint = highTriangleClose+75;
+                        }),
+                        new SleepAction(2)
+                );
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -157,135 +159,12 @@ public class OdoAutoBigTriangle extends RobotHardware {
                 new SleepAction(startWaitTime),
                 move2Score.build(),
                 drive.actionBuilder(scorePose).turnTo(targetAngle+autoOffset).build(),
-                new InstantAction(() -> //does on start, Shoot 3 balls
-                {
-                    shooterSetPoint = highTriangleClose+75;
-                }),
-                new SleepAction(2.5 ),
-
-
-
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1.5)),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1.5)),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1.5)),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1.5)),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1.5)),
-
-
-
-
-                new InstantAction(() ->
-                {
+                shooterSpinUp,
+                shootSequence,
+                new InstantAction(() -> {
                     shooterSetPoint = 0;
                 }),
                 move2Sweap.build()
-
-
         );
 
         canvas = new Canvas();

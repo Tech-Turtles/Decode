@@ -10,9 +10,13 @@ public final class Constants {
     public static boolean autoWait = false;
     public static double autoWaitTime = 11.5;
     public static double lowTriangle = 4300;
+    public static double lowTriangleDipTol = 100;
     public static double highTriangleEnd = 3670;
+    public static double highTriangleEndDipTol = 100;
     public static double highTriangleMid = 3460;
+    public static double highTriangleMidDipTol = 100;
     public static double highTriangleClose = 3240;
+    public static double highTriangleCloseDipTol = 100;
     public static double gateOpen = 0.55;
     public static double gateClosed = 1;
     public static double gateOpenDurationSeconds = 0.35;
@@ -31,7 +35,7 @@ public final class Constants {
     public static double kicking = 1;
     public static double kicked = 0;
     public static double flipperAdd = 0.5;
-    public static double dipAdd = 0.0;
+    public static double dipTol = 0.0;
     public static double rotationKs = 0.09;
     public static double rotationKv = 0.08;
     public static double maxRotationalVel = 2*Math.PI;
@@ -42,6 +46,7 @@ public final class Constants {
     public static double redTargetX = 68;
     public static double redTargetY = 67;
     public static double autoOffset= 0;
+    public static double autoShootTime = 5;
     public static double shooterBoostRPM = 75+10;
     public static double flipperDelay = 0.1825;
     public static double motorPower = 0.36;

@@ -2,14 +2,8 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
-import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset;
-import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpen;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpenDurationSeconds;
-import static org.firstinspires.ftc.teamcode.utility.Constants.kicked;
-import static org.firstinspires.ftc.teamcode.utility.Constants.kicking;
-import static org.firstinspires.ftc.teamcode.utility.Constants.redLLAngleOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.autoShootTime;
+import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangleDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
@@ -34,7 +28,6 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.utility.Constants;
@@ -65,11 +58,16 @@ public class OdoAuto extends RobotHardware {
     public static double moveForwardFinalX = moveForwardX - 27;
     public static double testAutoLowTriangle = 4200;
     public static double startWaitTime = 0.0;
+    public static double shooterRPM = 0.0;
+    public static int shotCount = 0;
+    public static double dipTol = lowTriangleDipTol;
+
+
+
 
     @Override
     public void init() {
         super.init();
-        gate.setPosition(gateClosed);
         Pose2d moveForwardEnd;
         TrajectoryActionBuilder moveForwardFinal;
         TrajectoryActionBuilder moveForward;
@@ -122,30 +120,112 @@ public class OdoAuto extends RobotHardware {
         }
 
 
+
+
+
+
+
+//        SequentialAction shootSequence =
+//                new SequentialAction(
+//                        new SequentialAction(
+//                                new InstantAction(()->{
+//                                    while (shotCount < 3) {
+//                                        new SequentialAction(
+//                                                new InstantAction(()-> {
+//                                                    if (shooterSetPoint != 0 && shooterRPM >= shooterSetPoint - dipTol) {
+//                                                        Transfer1.setPower(1);
+//                                                        Transfer2.setPower(1);
+//                                                        shotCount += 1;
+//                                                    }
+//                                                }),
+//                                                new InstantAction(()-> {
+//                                                    while (shooterRPM > shooterSetPoint - dipTol){
+//                                                        Transfer1.setPower(1);
+//                                                        Transfer2.setPower(1);
+//                                                    };
+//                                                    Transfer1.setPower(0);
+//                                                    Transfer2.setPower(0);
+//                                                })
+//                                                );
+//                                    }
+//
+//                                })
+//                        )
+//                );
+
+//        SequentialAction shootSequence =
+//                new SequentialAction(
+//                        new SequentialAction(
+//                                new InstantAction(() -> {
+//                                    if (shooterSetPoint != 0 && shooterRPM >= shooterSetPoint - dipTol) {
+//                                        Transfer1.setPower(1);
+//                                        Transfer2.setPower(1);
+//                                    }
+//                                }),
+//                                new SleepAction(autoShootSleepTime),
+//                                new InstantAction(()->{
+//                                    Transfer1.setPower(0);
+//                                    Transfer2.setPower(0);
+//                                })
+//                        ),
+//                        new SequentialAction(
+//                                new InstantAction(() -> {
+//                                    if (shooterSetPoint != 0 && shooterRPM >= shooterSetPoint - dipTol) {
+//                                        Transfer1.setPower(1);
+//                                        Transfer2.setPower(1);
+//                                    }
+//                                }),
+//                                new SleepAction(autoShootSleepTime),
+//                                new InstantAction(()->{
+//                                    Transfer1.setPower(0);
+//                                    Transfer2.setPower(0);
+//                                })
+//                        ),
+//                        new SequentialAction(
+//                                new InstantAction(() -> {
+//                                    if (shooterSetPoint != 0 && shooterRPM >= shooterSetPoint - dipTol) {
+//                                        Transfer1.setPower(1);
+//                                        Transfer2.setPower(1);
+//                                    }
+//                                }),
+//                                new SleepAction(autoShootSleepTime),
+//                                new InstantAction(()->{
+//                                    Transfer1.setPower(0);
+//                                    Transfer2.setPower(0);
+//                                })
+//                        ),
+//                        new InstantAction(() -> {
+//                            shooterSetPoint = 0;
+//                        })
+//                );
+
+
         SequentialAction shootSequence =
                 new SequentialAction(
-                new InstantAction(() ->
-                {
-                    gate.setPosition(gateOpen);
-                }),
-                new SleepAction(gateOpenDurationSeconds),
-                new InstantAction(() ->
-                {
-                    gate.setPosition(gateClosed);
-                }),
-                new InstantAction(() ->
-                {
-                    kickerLeft.setPosition(kicked);
-                    kickerRight.setPosition(kicked);
-                }),
-                new SleepAction(flipperAdd),
-                new InstantAction(() ->
-                {
-                    kickerLeft.setPosition(kicking);
-                    kickerRight.setPosition(kicking);
-                }),
-                new SleepAction(1)
-        );
+                        new SequentialAction(
+                                new InstantAction(() -> {
+                                        Transfer1.setPower(1);
+                                        Transfer2.setPower(1);
+                                }),
+                                new SleepAction(autoShootTime),
+                                new InstantAction(()->{
+                                    Transfer1.setPower(0);
+                                    Transfer2.setPower(0);
+                                })
+                        ),
+                        new InstantAction(() -> {
+                            shooterSetPoint = 0;
+                        })
+                );
+
+        SequentialAction shooterSpinUp =
+                new SequentialAction(
+                        new InstantAction(() -> {
+                            shooterSetPoint = lowTriangle;
+                        }),
+                        new SleepAction(1.5)
+                );
+
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -153,133 +233,8 @@ public class OdoAuto extends RobotHardware {
                 new SleepAction(startWaitTime),
                 moveForward.build(),
                 drive.actionBuilder(moveForwardEnd).turnTo(targetAngle+autoOffset).build(),
-                new InstantAction(() -> //does on start, Shoot 3 balls
-                {
-                    if (alliance == Constants.Alliance.TEST)
-                        shooterSetPoint = testAutoLowTriangle;
-                    else
-                        shooterSetPoint = testAutoLowTriangle;
-                }),
-                new SleepAction(1.5 + 0.5),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1)
-                ),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1)
-                ),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1)
-                ),
-                new SequentialAction(
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateOpen);
-                        }),
-                        new SleepAction(gateOpenDurationSeconds),
-                        new InstantAction(() ->
-                        {
-                            gate.setPosition(gateClosed);
-                        }),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicked);
-                            kickerRight.setPosition(kicked);
-                        }),
-                        new SleepAction(flipperAdd),
-                        new InstantAction(() ->
-                        {
-                            kickerLeft.setPosition(kicking);
-                            kickerRight.setPosition(kicking);
-                        }),
-                        new SleepAction(1)
-                ),
-        new SequentialAction(
-                new InstantAction(() ->
-                {
-                    gate.setPosition(gateOpen);
-                }),
-                new SleepAction(gateOpenDurationSeconds),
-                new InstantAction(() ->
-                {
-                    gate.setPosition(gateClosed);
-                }),
-                new InstantAction(() ->
-                {
-                    kickerLeft.setPosition(kicked);
-                    kickerRight.setPosition(kicked);
-                }),
-                new SleepAction(flipperAdd),
-                new InstantAction(() ->
-                {
-                    kickerLeft.setPosition(kicking);
-                    kickerRight.setPosition(kicking);
-                }),
-                new SleepAction(1)
-        ),
-                new InstantAction(() ->
-                {
-                    shooterSetPoint = 0;
-                }),
+                shooterSpinUp,
+               shootSequence,
                 moveForwardFinal.build()
         );
 
@@ -307,7 +262,7 @@ public class OdoAuto extends RobotHardware {
 
         // Calculate shooter rpm; ticks per second to rpm
         // 6000 rpm motor is 28 ticks per rotation
-        double shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
+        shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
         double power = shooterPID.calculate(shooterRPM, shooterSetPoint);
         double combined = Math.min(1, Math.max(-1, shooterSetPoint * kV + power));
 

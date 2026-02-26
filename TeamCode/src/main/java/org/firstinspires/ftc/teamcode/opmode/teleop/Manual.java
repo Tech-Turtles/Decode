@@ -1,26 +1,22 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
-import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.moveForwardFinalX;
-import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.moveForwardX;
-import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.startX;
-import static org.firstinspires.ftc.teamcode.opmode.autonomous.OdoAuto.startY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetY;
-import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
-import static org.firstinspires.ftc.teamcode.utility.Constants.flipperDelay;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleClose;
+import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleCloseDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleEnd;
+import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleEndDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleMid;
+import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleMidDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kStatic;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kV;
-import static org.firstinspires.ftc.teamcode.utility.Constants.kicked;
-import static org.firstinspires.ftc.teamcode.utility.Constants.kicking;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llAngleSetpoint;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
+import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangleDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.maxRotationalVel;
 import static org.firstinspires.ftc.teamcode.utility.Constants.redLLAngleOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.redTargetX;
@@ -35,24 +31,17 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.shooterI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.slowModeSpeed;
 import static org.firstinspires.ftc.teamcode.utility.Constants.superSlowMode;
-import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
-import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.tolerance;
-import static org.firstinspires.ftc.teamcode.utility.Constants.motorPower;
-import static org.firstinspires.ftc.teamcode.utility.Constants.dipAdd;
+import static org.firstinspires.ftc.teamcode.utility.Constants.dipTol;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.RobotHardware;
-import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.utility.Constants;
-import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 import java.util.ArrayList;
@@ -65,6 +54,11 @@ public class Manual extends RobotHardware {
     // Set point is RPM
     private double setpoint = 0;
     List<Integer> shotRPMList = new ArrayList<>();
+    List<Integer> triangleshotRPMList = new ArrayList<>();
+    List<Integer> squareshotRPMList = new ArrayList<>();
+    List<Integer> circleshotRPMList = new ArrayList<>();
+    List<Integer> crossshotRPMList = new ArrayList<>();
+    List<Integer> boostshotRPMList = new ArrayList<>();
     private double prevP, prevI, prevD;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private double fieldDriveOffsetDeg = -90;
@@ -186,7 +180,7 @@ public class Manual extends RobotHardware {
         while (headingToTarget < -Math.PI)
             headingToTarget += Math.PI;
         telemetry.addData("Target Pose", "X: %.2f Y: %.2f", target.position.x, target.position.y);
-        telemetry.addData("Delta Pose", "X: %.2f Y: %.2f", deltaX, deltaY);
+//        telemetry.addData("Delta Pose", "X: %.2f Y: %.2f", deltaX, deltaY);
         displayData("Heading To Target", Math.toDegrees(headingToTarget));
         displayData("delta X to target", deltaX);
         displayData("delta Y to target", deltaY);
@@ -231,16 +225,35 @@ public class Manual extends RobotHardware {
         // Driver 2 shooter controls
         if (driver2.triangle()) {
             setpoint = lowTriangle + boost;
+            dipTol = lowTriangleDipTol;
         } else if (driver2.square()) {
             setpoint = highTriangleEnd + boost;
+            dipTol = highTriangleEndDipTol;
         } else if (driver2.cross()) {
             setpoint = highTriangleMid + boost;
+            dipTol = highTriangleMidDipTol;
         } else if (driver2.circle()) {
             setpoint = highTriangleClose + boost;
+            dipTol = highTriangleCloseDipTol;
         } else {
             setpoint = 0;
         }
 
+        if(driver2.triangleOnce()){
+            triangleshotRPMList.add( (int) distanceToTarget);
+        }
+        if(driver2.squareOnce()){
+            squareshotRPMList.add( (int) distanceToTarget);
+        }
+        if(driver2.crossOnce()){
+            crossshotRPMList.add( (int) distanceToTarget);
+        }
+        if(driver2.circleOnce()){
+            circleshotRPMList.add( (int) distanceToTarget);
+        }
+        if(driver2.dpadDownOnce()){
+            boostshotRPMList.add( (int) distanceToTarget);
+        }
 
         if (driver2.leftBumperOnce()) {
             Transfer1.setPower(1);
@@ -254,18 +267,19 @@ public class Manual extends RobotHardware {
         }
 
 
-        if (setpoint != 0 && shooterRPM >= setpoint - dipAdd && driver2.right_trigger > 0.5) {
+        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.right_trigger > 0.5 && shooterRPM <= setpoint + dipTol) {
                     Transfer1.setPower(1);
                     Transfer2.setPower(1);
-                    dipAdd = 100;
         }
-        if (setpoint != 0 && shooterRPM >= setpoint - dipAdd && driver2.left_trigger > 0.5) {
+        if (setpoint != 0 && shooterRPM < setpoint - dipTol && driver2.right_trigger > 0.5) {
+            Transfer1.setPower(0);
+            Transfer2.setPower(0);
+        }
+        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.left_trigger > 0.5) {
             Transfer1.setPower(0.4);
             Transfer2.setPower(0.4);
-            dipAdd = 100;
         }
             if (setpoint == 0 && autoServoOff) {
-                    dipAdd = 0;
                     Transfer1.setPower(0);
                     Transfer2.setPower(0);
                 }
@@ -292,7 +306,12 @@ public class Manual extends RobotHardware {
         displayData("Shooter RPM", shooterRPM);
         displayData("Setpoint RPM", setpoint);
         displayData("PID Power", power);
-        displayData("Shooter RPM on everyshot", shotRPMList);
+        displayData("Dist to target on triangle", triangleshotRPMList);
+        displayData("Dist to target on square", squareshotRPMList);
+        displayData("Dist to target on circle", circleshotRPMList);
+        displayData("Dist to target on cross", crossshotRPMList);
+        displayData("Dist to target on boost", boostshotRPMList);
+//        displayData("Shooter RPM on everyshot", shotRPMList);
 //        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
 //                status.getTemp(), status.getCpu(),(int)status.getFps());
         displayData("Alliance", alliance);
