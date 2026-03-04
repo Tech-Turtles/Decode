@@ -30,6 +30,7 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.shooterD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.slowModeSpeed;
+import static org.firstinspires.ftc.teamcode.utility.Constants.slowShootSpeed;
 import static org.firstinspires.ftc.teamcode.utility.Constants.superSlowMode;
 import static org.firstinspires.ftc.teamcode.utility.Constants.tolerance;
 import static org.firstinspires.ftc.teamcode.utility.Constants.dipTol;
@@ -225,16 +226,16 @@ public class Manual extends RobotHardware {
         // Driver 2 shooter controls
         if (driver2.triangle()) {
             setpoint = lowTriangle + boost;
-            dipTol = lowTriangleDipTol;
+//            dipTol = lowTriangleDipTol;
         } else if (driver2.square()) {
             setpoint = highTriangleEnd + boost;
-            dipTol = highTriangleEndDipTol;
+//            dipTol = highTriangleEndDipTol;
         } else if (driver2.cross()) {
             setpoint = highTriangleMid + boost;
-            dipTol = highTriangleMidDipTol;
+//            dipTol = highTriangleMidDipTol;
         } else if (driver2.circle()) {
             setpoint = highTriangleClose + boost;
-            dipTol = highTriangleCloseDipTol;
+//            dipTol = highTriangleCloseDipTol;
         } else {
             setpoint = 0;
         }
@@ -266,33 +267,48 @@ public class Manual extends RobotHardware {
 
         }
 
-
-        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.right_trigger > 0.5 && shooterRPM <= setpoint + dipTol) {
-                    Transfer1.setPower(1);
-                    Transfer2.setPower(1);
+        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.right_trigger > 0.5) {
+            Transfer1.setPower(1);
+            Transfer2.setPower(1);
+            dipTol = 100;
         }
-        if (setpoint != 0 && shooterRPM < setpoint - dipTol && driver2.right_trigger > 0.5) {
+        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.left_trigger > 0.5) {
+            Transfer1.setPower(slowShootSpeed);
+            Transfer2.setPower(slowShootSpeed);
+            dipTol = 100;
+        }
+        if (setpoint == 0 && autoServoOff) {
+            dipTol = 0;
             Transfer1.setPower(0);
             Transfer2.setPower(0);
         }
-        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.left_trigger > 0.5) {
-            Transfer1.setPower(0.4);
-            Transfer2.setPower(0.4);
+
+        if (driver2.dpadUpOnce()) {
+            autoServoOff = false;
         }
-            if (setpoint == 0 && autoServoOff) {
-                    Transfer1.setPower(0);
-                    Transfer2.setPower(0);
-                }
 
-            if (driver2.dpadUpOnce()) {
-                autoServoOff = false;
-            }
 
-        /*if (driver2.leftBumper()){
-            test1.setPower(motorPower);
-            test2.setPower(motorPower);
-        }*/
 
+//        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.right_trigger > 0.5 && shooterRPM <= setpoint + dipTol) {
+//                    Transfer1.setPower(1);
+//                    Transfer2.setPower(1);
+//        }
+//        if (setpoint != 0 && shooterRPM < setpoint - dipTol && driver2.right_trigger > 0.5) {
+//            Transfer1.setPower(0);
+//            Transfer2.setPower(0);
+//        }
+//        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.left_trigger > 0.5) {
+//            Transfer1.setPower(0.4);
+//            Transfer2.setPower(0.4);
+//        }
+//            if (setpoint == 0 && autoServoOff) {
+//                    Transfer1.setPower(0);
+//                    Transfer2.setPower(0);
+//                }
+//
+//            if (driver2.dpadUpOnce()) {
+//                autoServoOff = false;
+//            }
 
             if (setpoint != 0) {
                 shooterTop.setPower(combined + Math.signum(power) * kStatic);
