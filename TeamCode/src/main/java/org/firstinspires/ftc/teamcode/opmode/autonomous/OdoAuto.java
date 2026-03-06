@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoShootTime;
+import static org.firstinspires.ftc.teamcode.utility.Constants.blueShooterBoostRPM;
 import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangleDipTol;
+import static org.firstinspires.ftc.teamcode.utility.Constants.redShooterBoostRPM;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
@@ -59,6 +61,7 @@ public class OdoAuto extends RobotHardware {
     public static double testAutoLowTriangle = 4200;
     public static double startWaitTime = 0.0;
     public static double shooterRPM = 0.0;
+    public static double autoShooterRPM = 0.0;
     public static int shotCount = 0;
     public static double dipTol = lowTriangleDipTol;
 
@@ -74,10 +77,12 @@ public class OdoAuto extends RobotHardware {
         double targetAngle = 180;
 
         if (autoWait)
-            startWaitTime = autoWaitTime + 3.5;
+            startWaitTime = autoWaitTime;
 
 
         if (alliance == Constants.Alliance.RED){
+            autoShooterRPM =  lowTriangle;
+
             drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(0)));
 
             moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(0));
@@ -92,6 +97,8 @@ public class OdoAuto extends RobotHardware {
 
 
         } else if (alliance == Constants.Alliance.BLUE) {
+            autoShooterRPM =  lowTriangle;
+
             drive.localizer.setPose(new Pose2d(startX, -startY, Math.toRadians(0)));
 
             moveForwardEnd = new Pose2d(moveForwardX, -startY, Math.toRadians(0));
@@ -221,7 +228,7 @@ public class OdoAuto extends RobotHardware {
         SequentialAction shooterSpinUp =
                 new SequentialAction(
                         new InstantAction(() -> {
-                            shooterSetPoint = lowTriangle;
+                            shooterSetPoint = autoShooterRPM;
                         }),
                         new SleepAction(1.5)
                 );
@@ -230,7 +237,7 @@ public class OdoAuto extends RobotHardware {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         autonomous = new SequentialAction(
-                new SleepAction(startWaitTime),
+                new SleepAction(startWaitTime + 3.5),
                 moveForward.build(),
                 drive.actionBuilder(moveForwardEnd).turnTo(targetAngle+autoOffset).build(),
                 shooterSpinUp,

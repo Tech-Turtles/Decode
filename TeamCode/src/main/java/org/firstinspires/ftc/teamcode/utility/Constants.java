@@ -8,7 +8,7 @@ public final class Constants {
         RED, BLUE, TEST
     }
     public static boolean autoWait = false;
-    public static double autoWaitTime = 11.5+4;
+    public static double autoWaitTime = 11.5 + 4;
     public static double lowTriangle = 4300;
     public static double lowTriangleDipTol = 100;
     public static double highTriangleEnd = 3670;
@@ -41,13 +41,15 @@ public final class Constants {
     public static double maxRotationalVel = 2*Math.PI;
     public static double targetX = 68;
     public static double targetY = 62;
-    public static double blueTargetX = 65;
-    public static double blueTargetY = 62;
+    public static double blueTargetX = 68;
+    public static double blueTargetY = 64;
     public static double redTargetX = 68;
     public static double redTargetY = 67;
     public static double autoOffset= 0;
     public static double autoShootTime = 5;
-    public static double shooterBoostRPM = 125;
+    public static double blueShooterBoostRPM = 150;
+    public static double redShooterBoostRPM = 150;
+    public static double blueShooterFarBoostRPM = 200;
     public static double flipperDelay = 0.1825;
     public static double motorPower = 0.36;
     public static double slowShootSpeed = 0.3;

@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueLLAngleOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.blueShooterFarBoostRPM;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.blueTargetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleClose;
-import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleCloseDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleEnd;
-import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleEndDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleMid;
-import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleMidDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kStatic;
 import static org.firstinspires.ftc.teamcode.utility.Constants.kV;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llAngleSetpoint;
@@ -16,16 +14,16 @@ import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
-import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangleDipTol;
 import static org.firstinspires.ftc.teamcode.utility.Constants.maxRotationalVel;
 import static org.firstinspires.ftc.teamcode.utility.Constants.redLLAngleOffset;
+import static org.firstinspires.ftc.teamcode.utility.Constants.redShooterBoostRPM;
 import static org.firstinspires.ftc.teamcode.utility.Constants.redTargetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.redTargetY;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
 import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
 import static org.firstinspires.ftc.teamcode.utility.Constants.rotationKs;
 import static org.firstinspires.ftc.teamcode.utility.Constants.rotationKv;
-import static org.firstinspires.ftc.teamcode.utility.Constants.shooterBoostRPM;
+import static org.firstinspires.ftc.teamcode.utility.Constants.blueShooterBoostRPM;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.shooterP;
@@ -218,43 +216,48 @@ public class Manual extends RobotHardware {
 
         //intake.setPower(intakeF - intakeB);
 
-        if (driver2.dpadDown())
-            boost = shooterBoostRPM;
-        else
-            boost = 0;
+        if (driver2.dpadDown() && alliance == Constants.Alliance.BLUE)
+            boost = blueShooterBoostRPM;
+        else if (driver2.dpadRight() && alliance == Constants.Alliance.BLUE)
+            boost = blueShooterFarBoostRPM;
+        else if (driver2.dpadRight() && alliance == Constants.Alliance.RED)
+            boost = blueShooterFarBoostRPM;
+        else if (driver2.dpadDown() && alliance == Constants.Alliance.RED)
+            boost = redShooterBoostRPM;
+        else boost = 0;
+
 
         // Driver 2 shooter controls
-        if (driver2.triangle()) {
+        if (driver2.triangle())
             setpoint = lowTriangle + boost;
 //            dipTol = lowTriangleDipTol;
-        } else if (driver2.square()) {
+        else if (driver2.square())
             setpoint = highTriangleEnd + boost;
 //            dipTol = highTriangleEndDipTol;
-        } else if (driver2.cross()) {
+        else if (driver2.cross())
             setpoint = highTriangleMid + boost;
 //            dipTol = highTriangleMidDipTol;
-        } else if (driver2.circle()) {
+        else if (driver2.circle())
             setpoint = highTriangleClose + boost;
 //            dipTol = highTriangleCloseDipTol;
-        } else {
-            setpoint = 0;
-        }
+        else setpoint = 0;
 
-        if(driver2.triangleOnce()){
-            triangleshotRPMList.add( (int) distanceToTarget);
-        }
-        if(driver2.squareOnce()){
-            squareshotRPMList.add( (int) distanceToTarget);
-        }
-        if(driver2.crossOnce()){
-            crossshotRPMList.add( (int) distanceToTarget);
-        }
-        if(driver2.circleOnce()){
-            circleshotRPMList.add( (int) distanceToTarget);
-        }
-        if(driver2.dpadDownOnce()){
-            boostshotRPMList.add( (int) distanceToTarget);
-        }
+
+//        if(driver2.triangleOnce()){
+//            triangleshotRPMList.add( (int) distanceToTarget);
+//        }
+//        if(driver2.squareOnce()){
+//            squareshotRPMList.add( (int) distanceToTarget);
+//        }
+//        if(driver2.crossOnce()){
+//            crossshotRPMList.add( (int) distanceToTarget);
+//        }
+//        if(driver2.circleOnce()){
+//            circleshotRPMList.add( (int) distanceToTarget);
+//        }
+//        if(driver2.dpadDownOnce()){
+//            boostshotRPMList.add( (int) distanceToTarget);
+//        }
 
         if (driver2.leftBumperOnce()) {
             Transfer1.setPower(1);
@@ -264,7 +267,6 @@ public class Manual extends RobotHardware {
         if (driver2.rightBumperOnce()) {
             Transfer1.setPower(0);
             Transfer2.setPower(0);
-
         }
 
         if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.right_trigger > 0.5) {
@@ -286,8 +288,6 @@ public class Manual extends RobotHardware {
         if (driver2.dpadUpOnce()) {
             autoServoOff = false;
         }
-
-
 
 //        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.right_trigger > 0.5 && shooterRPM <= setpoint + dipTol) {
 //                    Transfer1.setPower(1);
@@ -322,11 +322,11 @@ public class Manual extends RobotHardware {
         displayData("Shooter RPM", shooterRPM);
         displayData("Setpoint RPM", setpoint);
         displayData("PID Power", power);
-        displayData("Dist to target on triangle", triangleshotRPMList);
-        displayData("Dist to target on square", squareshotRPMList);
-        displayData("Dist to target on circle", circleshotRPMList);
-        displayData("Dist to target on cross", crossshotRPMList);
-        displayData("Dist to target on boost", boostshotRPMList);
+//        displayData("Dist to target on triangle", triangleshotRPMList);
+//        displayData("Dist to target on square", squareshotRPMList);
+//        displayData("Dist to target on circle", circleshotRPMList);
+//        displayData("Dist to target on cross", crossshotRPMList);
+//        displayData("Dist to target on boost", boostshotRPMList);
 //        displayData("Shooter RPM on everyshot", shotRPMList);
 //        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
 //                status.getTemp(), status.getCpu(),(int)status.getFps());
