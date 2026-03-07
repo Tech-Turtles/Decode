@@ -209,13 +209,6 @@ public class Manual extends RobotHardware {
         else
             drive.setDrivePowersField(x * slowSpeed, -y * slowSpeed, rx * slowSpeed, fieldDriveOffsetDeg);
 
-
-        // Intake control - Forward and backwards
-        // double intakeF = driver1.left_trigger;
-        // double intakeB = driver1.right_trigger; n
-
-        //intake.setPower(intakeF - intakeB);
-
         if (driver2.dpadDown() && alliance == Constants.Alliance.BLUE)
             boost = blueShooterBoostRPM;
         else if (driver2.dpadRight() && alliance == Constants.Alliance.BLUE)
@@ -226,6 +219,14 @@ public class Manual extends RobotHardware {
             boost = redShooterBoostRPM;
         else boost = 0;
 
+        if (driver2.rightStickButtonOnce() && alliance == Constants.Alliance.RED)
+            redTargetY = redTargetY + 0.5;
+        else if (driver2.rightStickButtonOnce() && alliance == Constants.Alliance.BLUE)
+            blueTargetY = blueTargetY + 0.5;
+        else if (driver2.leftStickButtonOnce() && alliance == Constants.Alliance.RED)
+            redTargetY = redTargetY - 0.5;
+        else if (driver2.leftStickButtonOnce() && alliance == Constants.Alliance.BLUE)
+            blueTargetY = blueTargetY - 0.5;
 
         // Driver 2 shooter controls
         if (driver2.triangle())
@@ -241,7 +242,6 @@ public class Manual extends RobotHardware {
             setpoint = highTriangleClose + boost;
 //            dipTol = highTriangleCloseDipTol;
         else setpoint = 0;
-
 
 //        if(driver2.triangleOnce()){
 //            triangleshotRPMList.add( (int) distanceToTarget);
@@ -289,26 +289,6 @@ public class Manual extends RobotHardware {
             autoServoOff = false;
         }
 
-//        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.right_trigger > 0.5 && shooterRPM <= setpoint + dipTol) {
-//                    Transfer1.setPower(1);
-//                    Transfer2.setPower(1);
-//        }
-//        if (setpoint != 0 && shooterRPM < setpoint - dipTol && driver2.right_trigger > 0.5) {
-//            Transfer1.setPower(0);
-//            Transfer2.setPower(0);
-//        }
-//        if (setpoint != 0 && shooterRPM >= setpoint - dipTol && driver2.left_trigger > 0.5) {
-//            Transfer1.setPower(0.4);
-//            Transfer2.setPower(0.4);
-//        }
-//            if (setpoint == 0 && autoServoOff) {
-//                    Transfer1.setPower(0);
-//                    Transfer2.setPower(0);
-//                }
-//
-//            if (driver2.dpadUpOnce()) {
-//                autoServoOff = false;
-//            }
 
             if (setpoint != 0) {
                 shooterTop.setPower(combined + Math.signum(power) * kStatic);
@@ -322,14 +302,6 @@ public class Manual extends RobotHardware {
         displayData("Shooter RPM", shooterRPM);
         displayData("Setpoint RPM", setpoint);
         displayData("PID Power", power);
-//        displayData("Dist to target on triangle", triangleshotRPMList);
-//        displayData("Dist to target on square", squareshotRPMList);
-//        displayData("Dist to target on circle", circleshotRPMList);
-//        displayData("Dist to target on cross", crossshotRPMList);
-//        displayData("Dist to target on boost", boostshotRPMList);
-//        displayData("Shooter RPM on everyshot", shotRPMList);
-//        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
-//                status.getTemp(), status.getCpu(),(int)status.getFps());
         displayData("Alliance", alliance);
 
 
