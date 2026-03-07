@@ -220,13 +220,13 @@ public class Manual extends RobotHardware {
         else boost = 0;
 
         if (driver2.rightStickButtonOnce() && alliance == Constants.Alliance.RED)
-            redTargetY = redTargetY + 0.5;
+            redTargetY = redTargetY - 0.25;
         else if (driver2.rightStickButtonOnce() && alliance == Constants.Alliance.BLUE)
-            blueTargetY = blueTargetY + 0.5;
+            blueTargetY = blueTargetY - 0.25;
         else if (driver2.leftStickButtonOnce() && alliance == Constants.Alliance.RED)
-            redTargetY = redTargetY - 0.5;
+            redTargetY = redTargetY + 0.25;
         else if (driver2.leftStickButtonOnce() && alliance == Constants.Alliance.BLUE)
-            blueTargetY = blueTargetY - 0.5;
+            blueTargetY = blueTargetY + 0.25;
 
         // Driver 2 shooter controls
         if (driver2.triangle())

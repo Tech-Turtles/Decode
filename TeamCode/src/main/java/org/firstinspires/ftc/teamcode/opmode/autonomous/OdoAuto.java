@@ -237,7 +237,7 @@ public class OdoAuto extends RobotHardware {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         autonomous = new SequentialAction(
-                new SleepAction(startWaitTime + 3.5),
+                new SleepAction(startWaitTime),
                 moveForward.build(),
                 drive.actionBuilder(moveForwardEnd).turnTo(targetAngle+autoOffset).build(),
                 shooterSpinUp,

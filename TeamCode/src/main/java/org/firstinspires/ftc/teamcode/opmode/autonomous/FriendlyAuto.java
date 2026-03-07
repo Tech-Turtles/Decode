@@ -88,7 +88,8 @@ public class FriendlyAuto extends RobotHardware {
             targetAngle = OdoAim(moveForwardEnd);
 
             moveOutFinal =
-                    drive.actionBuilder(new Pose2d(moveForwardX, startY, Math.toRadians(0))).lineToY(moveOutFinalY);
+                    drive.actionBuilder(new Pose2d(moveForwardX, startY, Math.toRadians(0)))
+                    .splineTo(new Vector2d(moveForwardX + 4, startY + 18), Math.toRadians(-90));
 
             moveForward =
                     drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardX);
@@ -104,7 +105,8 @@ public class FriendlyAuto extends RobotHardware {
             targetAngle = OdoAim(moveForwardEnd);
 
             moveOutFinal =
-                    drive.actionBuilder(new Pose2d(moveForwardX, -startY, Math.toRadians(0))).lineToY(-moveOutFinalY);
+                    drive.actionBuilder(new Pose2d(moveForwardX, -startY, Math.toRadians(0)))
+                    .splineTo(new Vector2d(moveForwardX + 4, -(startY + 18)), Math.toRadians(90));
 
             moveForward =
                     drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(0))).lineToX(moveForwardX);

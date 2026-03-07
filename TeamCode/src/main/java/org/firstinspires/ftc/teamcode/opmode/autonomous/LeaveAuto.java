@@ -1,23 +1,19 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 
-import static org.firstinspires.ftc.teamcode.opmode.autonomous.SmallTriangleAuto.gateOpenDurationSeconds;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoOffset;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoShootTime;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoWait;
 import static org.firstinspires.ftc.teamcode.utility.Constants.autoWaitTime;
-import static org.firstinspires.ftc.teamcode.utility.Constants.flipperAdd;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateOpen;
-import static org.firstinspires.ftc.teamcode.utility.Constants.highTriangleClose;
-import static org.firstinspires.ftc.teamcode.utility.Constants.kicked;
-import static org.firstinspires.ftc.teamcode.utility.Constants.kicking;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llD;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llI;
 import static org.firstinspires.ftc.teamcode.utility.Constants.llP;
 import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangle;
+import static org.firstinspires.ftc.teamcode.utility.Constants.lowTriangleDipTol;
+import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfLength;
+import static org.firstinspires.ftc.teamcode.utility.Constants.robotHalfWidth;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetX;
 import static org.firstinspires.ftc.teamcode.utility.Constants.targetY;
-import static org.firstinspires.ftc.teamcode.utility.Constants.gateClosed;
 
 import androidx.annotation.NonNull;
 
@@ -39,7 +35,7 @@ import org.firstinspires.ftc.teamcode.utility.ElapsedTimer;
 import org.firstinspires.ftc.teamcode.utility.PIDController;
 
 @Config
-public class OdoAutoBigTriangle extends RobotHardware {
+public class LeaveAuto extends RobotHardware {
 
     private Canvas canvas;
     private Action autonomous;
@@ -56,83 +52,89 @@ public class OdoAutoBigTriangle extends RobotHardware {
     public static double kStatic = 0.06;
     protected PIDController llAnglePID = new PIDController(llP, llI, llD);
     private final ElapsedTimer gateTimer = new ElapsedTimer();
-    public static double startX = -50.882;
-    public static double startY = 49.719;
-    public static double startH = -45.43;
-    public static double scoreX = -17.155;
-    public static double scoreY = 15.299;
-    public static double sweapX = -30;
-    public static double sweapY = 48;
+    public static double startX = 72 - robotHalfLength;
+    public static double startY = (24 - robotHalfWidth);
+    public static double moveForwardX = startX - 4;
+    public static double moveForwardFinalX = moveForwardX - 27;
+    public static double moveOutFinalY = startY  + 18;
+    public static double testAutoLowTriangle = 4200;
     public static double startWaitTime = 0.0;
+    public static double shooterRPM = 0.0;
+    public static double autoShooterRPM = 0.0;
+    public static int shotCount = 0;
+    public static double dipTol = lowTriangleDipTol;
+
 
 
 
     @Override
     public void init() {
         super.init();
-        Pose2d scorePose;
-        Pose2d startPose;
-        TrajectoryActionBuilder move2Score;
-        TrajectoryActionBuilder move2Sweap;
+        Pose2d moveForwardEnd;
+        TrajectoryActionBuilder moveOutFinal;
+        TrajectoryActionBuilder moveForward;
         double targetAngle = 180;
 
         if (autoWait)
-                startWaitTime = autoWaitTime  - 4;
+            startWaitTime = autoWaitTime;
+
 
         if (alliance == Constants.Alliance.RED){
-            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(startH)));
+            autoShooterRPM =  lowTriangle;
 
-            startPose = new Pose2d(startX, startY, Math.toRadians(startH));
-            scorePose = new Pose2d(scoreX, scoreY, Math.toRadians(0));
-            targetAngle = OdoAim(scorePose);
+            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(0)));
 
-            move2Score =
-                    drive.actionBuilder(startPose).splineTo(new Vector2d(scoreX, scoreY), Math.toRadians(startH));
+            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(0));
+            targetAngle = OdoAim(moveForwardEnd);
 
+            moveOutFinal =
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0)))
+                    .splineToConstantHeading(new Vector2d(startX + 4, startY + 18), Math.toRadians(0));
 
-            move2Sweap =
-                    drive.actionBuilder(startPose).splineTo(new Vector2d(sweapX, sweapY), Math.toRadians(0));
+            moveForward =
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardX);
 
 
 
         } else if (alliance == Constants.Alliance.BLUE) {
-            drive.localizer.setPose(new Pose2d(startX, -startY, Math.toRadians(-startH)));
+            autoShooterRPM =  lowTriangle;
 
-            startPose = new Pose2d(startX, -startY, Math.toRadians(-startH));
-            scorePose = new Pose2d(scoreX, -scoreY, Math.toRadians(0));
-            targetAngle = OdoAim(scorePose);
+            drive.localizer.setPose(new Pose2d(startX, -startY, Math.toRadians(0)));
 
-            move2Score =
-                    drive.actionBuilder(startPose).splineTo(new Vector2d(scoreX, -scoreY), Math.toRadians(-startH));
+            moveForwardEnd = new Pose2d(moveForwardX, -startY, Math.toRadians(0));
+            targetAngle = OdoAim(moveForwardEnd);
 
+            moveOutFinal =
+                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(0))).lineToY(-moveOutFinalY)
+                    .splineToConstantHeading(new Vector2d(startX + 4, -(startY + 18)), Math.toRadians(0));
 
-            move2Sweap =
-                    drive.actionBuilder(startPose).splineTo(new Vector2d(sweapX, -sweapY), Math.toRadians(0));
+            moveForward =
+                    drive.actionBuilder(new Pose2d(startX, -startY, Math.toRadians(0))).lineToX(moveForwardX);
 
         // Test mode
         }  else {
-            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(startH)));
+            testAutoLowTriangle = lowTriangle - 75;
 
-            startPose = new Pose2d(startX, startY, Math.toRadians(startH));
-            scorePose = new Pose2d(scoreX, scoreY, Math.toRadians(0));
-            targetAngle = OdoAim(scorePose);
+            drive.localizer.setPose(new Pose2d(startX, startY, Math.toRadians(0)));
 
-            move2Score =
-                    drive.actionBuilder(startPose).splineTo(new Vector2d(scoreX, scoreY), Math.toRadians(startH));
+            moveForwardEnd = new Pose2d(moveForwardX, startY, Math.toRadians(0));
+            targetAngle = OdoAim(moveForwardEnd);
 
+            moveOutFinal =
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardX + 20);
 
-            move2Sweap =
-                    drive.actionBuilder(startPose).splineTo(new Vector2d(sweapX, sweapY), Math.toRadians(0));
-
+            moveForward =
+                    drive.actionBuilder(new Pose2d(startX, startY, Math.toRadians(0))).lineToX(moveForwardX);
         }
+
 
 
         SequentialAction shootSequence =
                 new SequentialAction(
                         new SequentialAction(
                                 new InstantAction(() -> {
-                                    Transfer1.setPower(1);
-                                    Transfer2.setPower(1);
+                                        Transfer1.setPower(1);
+                                        Transfer2.setPower(1);
                                 }),
                                 new SleepAction(autoShootTime),
                                 new InstantAction(()->{
@@ -148,23 +150,17 @@ public class OdoAutoBigTriangle extends RobotHardware {
         SequentialAction shooterSpinUp =
                 new SequentialAction(
                         new InstantAction(() -> {
-                            shooterSetPoint = highTriangleClose+75;
+                            shooterSetPoint = autoShooterRPM;
                         }),
-                        new SleepAction(2)
+                        new SleepAction(1.5)
                 );
+
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         autonomous = new SequentialAction(
                 new SleepAction(startWaitTime),
-                move2Score.build(),
-                drive.actionBuilder(scorePose).turnTo(targetAngle+autoOffset).build(),
-                shooterSpinUp,
-                shootSequence,
-                new InstantAction(() -> {
-                    shooterSetPoint = 0;
-                }),
-                move2Sweap.build()
+                moveOutFinal.build()
         );
 
         canvas = new Canvas();
@@ -191,7 +187,7 @@ public class OdoAutoBigTriangle extends RobotHardware {
 
         // Calculate shooter rpm; ticks per second to rpm
         // 6000 rpm motor is 28 ticks per rotation
-        double shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
+        shooterRPM = shooterTop.getVelocity() / 28.0 * 60.0;
         double power = shooterPID.calculate(shooterRPM, shooterSetPoint);
         double combined = Math.min(1, Math.max(-1, shooterSetPoint * kV + power));
 
@@ -233,7 +229,7 @@ public class OdoAutoBigTriangle extends RobotHardware {
 
         double deltaX = robot.position.x - target.position.x;
         double deltaY = robot.position.y - target.position.y;
-        double headingToTarget = Math.atan2(deltaY, deltaX) + Math.toRadians(autoOffset);
+        double headingToTarget = Math.atan2(deltaY, deltaX) + Math.toRadians(Constants.autoOffset);
         while (headingToTarget > Math.PI)
             headingToTarget -= Math.PI;
         while (headingToTarget < -Math.PI)
